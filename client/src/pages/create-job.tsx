@@ -54,17 +54,18 @@ interface VehicleData {
 interface Job {
   id: string;
   vrm: string;
-  make: string;
-  model: string;
-  year: number;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  customerAddress: string;
-  customerPostcode: string;
+  customerId: string;
   status: "created" | "in_progress" | "completed" | "cancelled";
   createdAt: string;
   updatedAt: string;
+  customer?: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    postcode: string;
+  };
 }
 
 export default function CreateJob() {
@@ -584,18 +585,19 @@ export default function CreateJob() {
                     jobs.map((job: Job) => (
                       <div
                         key={job.id}
-                        className="bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 transition-colors"
+                        className="bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 transition-colors cursor-pointer"
+                        onClick={() => navigate(`/jobs/${job.id}`)}
                       >
                         <div className="flex justify-between items-start">
                           <div className="space-y-1">
                             <div className="text-white font-medium">
-                              {job.make} {job.model} ({job.year})
-                            </div>
-                            <div className="text-white/70 text-sm">
                               VRM: {job.vrm}
                             </div>
                             <div className="text-white/70 text-sm">
-                              Customer: {job.customerName}
+                              Customer: {job.customer?.name || 'Unknown'}
+                            </div>
+                            <div className="text-white/70 text-sm">
+                              Phone: {job.customer?.phone || 'No phone'}
                             </div>
                             <div className="text-white/70 text-sm">
                               Status: <span className={`capitalize ${

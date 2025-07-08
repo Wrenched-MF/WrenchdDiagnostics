@@ -171,14 +171,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let jobs = await storage.getJobsByUserId(userId);
       
-      // Jobs are already sorted by creation date (newest first) in storage
+      // Enrich jobs with customer data
+      const enrichedJobs = await Promise.all(
+        jobs.map(async (job) => {
+          const customer = await storage.getCustomer(job.customerId);
+          return {
+            ...job,
+            customer
+          };
+        })
+      );
       
       // If limit is specified for recent jobs, return only that many results
       if (limit && sort === 'recent') {
-        jobs = jobs.slice(0, parseInt(limit as string));
+        const limitedJobs = enrichedJobs.slice(0, parseInt(limit as string));
+        res.json(limitedJobs);
+      } else {
+        res.json(enrichedJobs);
       }
-      
-      res.json(jobs);
     } catch (error) {
       console.error('Error fetching jobs:', error);
       res.status(500).json({ message: 'Failed to fetch jobs' });
@@ -199,7 +209,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: 'Access denied' });
       }
 
-      res.json(job);
+      // Get related vehicle and customer data
+      const vehicle = await storage.getVehicle(job.vrm);
+      const customer = await storage.getCustomer(job.customerId);
+
+      const enrichedJob = {
+        ...job,
+        vehicle,
+        customer
+      };
+
+      res.json(enrichedJob);
     } catch (error) {
       console.error('Error fetching job:', error);
       res.status(500).json({ message: 'Failed to fetch job' });
