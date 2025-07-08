@@ -1,37 +1,42 @@
 import { useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Users, UserCheck, UserX, CreditCard, Activity, ArrowLeft } from "lucide-react";
-import { Link } from "wouter";
-import { apiRequest } from "@/lib/queryClient";
+import { Link, useLocation } from "wouter";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import wrenchdLogo from "@assets/wrenchd_ivhc_icon_512x512_1752010342000.png";
 
 export default function AdminDashboard() {
-  const { user, isLoading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
+
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["/api/user"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
+    retry: false,
+  });
 
   // Redirect if not admin
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== 'admin' || !user?.isApproved)) {
+    if (!isLoading && (!user || user?.role !== 'admin' || !user?.isApproved)) {
       toast({
         title: "Access Denied",
         description: "You don't have permission to access the admin dashboard.",
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/";
+        setLocation("/");
       }, 1000);
     }
-  }, [isAuthenticated, isLoading, user, toast]);
+  }, [user, isLoading, toast, setLocation]);
 
   const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ["/api/admin/users"],

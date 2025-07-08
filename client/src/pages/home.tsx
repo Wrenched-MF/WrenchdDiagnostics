@@ -1,13 +1,39 @@
-import { useAuth } from "@/hooks/useAuth";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
 import { Wrench, FileText, Users, Settings, LogOut } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import wrenchdLogo from "@assets/wrenchd_ivhc_icon_512x512_1752010342000.png";
 
 export default function HomePage() {
-  const { user, isLoading } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
+
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["/api/user"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
+    retry: false,
+  });
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("POST", "/api/logout");
+    },
+    onSuccess: () => {
+      queryClient.setQueryData(["/api/user"], null);
+      setLocation("/");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Logout failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   const { data: reports = [] } = useQuery({
     queryKey: ["/api/user/reports"],
@@ -23,7 +49,7 @@ export default function HomePage() {
   }
 
   const handleLogout = () => {
-    window.location.href = "/api/logout";
+    logoutMutation.mutate();
   };
 
   return (

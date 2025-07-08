@@ -1,18 +1,24 @@
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import LoadingPage from "@/pages/loading";
 import HomePage from "@/pages/home";
 import AdminDashboard from "@/pages/admin-dashboard";
+import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
+import { getQueryFn } from "./lib/queryClient";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
   const [showLoading, setShowLoading] = useState(true);
+  
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["/api/user"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
+    retry: false,
+  });
 
   useEffect(() => {
     // Show loading screen for at least 3 seconds on initial load
@@ -28,23 +34,18 @@ function Router() {
     return <LoadingPage onComplete={() => setShowLoading(false)} />;
   }
 
-  // If not authenticated, redirect to login
-  if (!isAuthenticated) {
-    window.location.href = "/api/login";
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-green-900 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="animate-spin w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full mx-auto" />
-          <p className="text-white">Redirecting to login...</p>
-        </div>
-      </div>
-    );
-  }
+  const isAuthenticated = !!user;
 
   return (
     <Switch>
-      <Route path="/" component={HomePage} />
-      <Route path="/admin" component={AdminDashboard} />
+      {isAuthenticated ? (
+        <>
+          <Route path="/" component={HomePage} />
+          <Route path="/admin" component={AdminDashboard} />
+        </>
+      ) : (
+        <Route path="/" component={AuthPage} />
+      )}
       <Route component={NotFound} />
     </Switch>
   );
