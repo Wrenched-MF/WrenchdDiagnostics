@@ -87,7 +87,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Job management routes
+  // Enhanced job creation with vehicle and customer registry
   app.post('/api/jobs', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
@@ -95,9 +95,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: 'Unauthorized' });
       }
 
+      const { vrm, make, model, year, colour, fuelType, engineSize, co2Emissions, dateOfFirstRegistration, customerName, customerEmail, customerPhone, customerAddress, customerPostcode } = req.body;
+      
+      // Create or update vehicle record
+      const vehicle = await storage.createOrUpdateVehicle({
+        vrm,
+        make,
+        model: model || '', // Allow empty model since DVLA doesn't provide it
+        year,
+        colour,
+        fuelType,
+        engineSize,
+        co2Emissions,
+        dateOfFirstRegistration,
+      });
+
+      // Check if customer already exists by email
+      let customer;
+      const existingCustomers = await storage.searchCustomers(customerEmail);
+      
+      if (existingCustomers.length > 0) {
+        customer = existingCustomers[0];
+      } else {
+        // Create new customer
+        customer = await storage.createCustomer({
+          id: `customer_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          name: customerName,
+          email: customerEmail,
+          phone: customerPhone,
+          address: customerAddress,
+          postcode: customerPostcode,
+        });
+      }
+
+      // Check if vehicle-customer relationship exists
+      const currentOwner = await storage.getCurrentOwner(vrm);
+      if (!currentOwner || currentOwner.id !== customer.id) {
+        // Link vehicle to customer (transfer ownership if needed)
+        if (currentOwner) {
+          await storage.transferOwnership(vrm, customer.id);
+        } else {
+          await storage.linkVehicleToCustomer({
+            id: `vc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            vrm,
+            customerId: customer.id,
+            isCurrentOwner: true,
+          });
+        }
+      }
+
+      // Create inspection job
       const job = await storage.createJob({
-        ...req.body,
+        id: `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         userId,
+        vrm,
+        customerId: customer.id,
+        status: "created",
       });
 
       res.json(job);
@@ -195,6 +248,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error deleting job:', error);
       res.status(500).json({ message: 'Failed to delete job' });
+    }
+  });
+
+  // Vehicle registry endpoints
+  app.get('/api/vehicles', isAuthenticated, async (req: any, res) => {
+    try {
+      const vehicles = await storage.getAllVehicles();
+      res.json(vehicles);
+    } catch (error) {
+      console.error('Error fetching vehicles:', error);
+      res.status(500).json({ message: 'Failed to fetch vehicles' });
+    }
+  });
+
+  app.get('/api/vehicles/:vrm', isAuthenticated, async (req: any, res) => {
+    try {
+      const { vrm } = req.params;
+      const vehicle = await storage.getVehicle(vrm.toUpperCase());
+      
+      if (!vehicle) {
+        return res.status(404).json({ message: 'Vehicle not found' });
+      }
+
+      res.json(vehicle);
+    } catch (error) {
+      console.error('Error fetching vehicle:', error);
+      res.status(500).json({ message: 'Failed to fetch vehicle' });
+    }
+  });
+
+  app.get('/api/vehicles/:vrm/customers', isAuthenticated, async (req: any, res) => {
+    try {
+      const { vrm } = req.params;
+      const customers = await storage.getCustomersByVehicle(vrm.toUpperCase());
+      res.json(customers);
+    } catch (error) {
+      console.error('Error fetching vehicle customers:', error);
+      res.status(500).json({ message: 'Failed to fetch vehicle customers' });
+    }
+  });
+
+  app.post('/api/vehicles/:vrm/transfer', isAuthenticated, async (req: any, res) => {
+    try {
+      const { vrm } = req.params;
+      const { customerId } = req.body;
+      
+      await storage.transferOwnership(vrm.toUpperCase(), customerId);
+      res.json({ message: 'Ownership transferred successfully' });
+    } catch (error) {
+      console.error('Error transferring ownership:', error);
+      res.status(500).json({ message: 'Failed to transfer ownership' });
+    }
+  });
+
+  // Customer registry endpoints
+  app.get('/api/customers/search', isAuthenticated, async (req: any, res) => {
+    try {
+      const { q } = req.query;
+      
+      if (!q) {
+        return res.status(400).json({ message: 'Search query is required' });
+      }
+
+      const customers = await storage.searchCustomers(q as string);
+      res.json(customers);
+    } catch (error) {
+      console.error('Error searching customers:', error);
+      res.status(500).json({ message: 'Failed to search customers' });
     }
   });
 
