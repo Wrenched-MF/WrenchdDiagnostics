@@ -7,6 +7,7 @@ import {
   index,
   boolean,
   decimal,
+  integer,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -57,24 +58,50 @@ export const subscriptions = pgTable("subscriptions", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Jobs table for vehicle inspections
-export const jobs = pgTable("jobs", {
-  id: varchar("id").primaryKey().notNull(),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-  vrm: varchar("vrm").notNull(),
+// Vehicle registry - stores permanent vehicle data from DVLA
+export const vehicles = pgTable("vehicles", {
+  vrm: varchar("vrm").primaryKey().notNull(),
   make: varchar("make").notNull(),
-  model: varchar("model").notNull(),
-  year: varchar("year").notNull(),
+  model: varchar("model").notNull(), // User-entered since DVLA doesn't provide this
+  year: integer("year").notNull(),
   colour: varchar("colour"),
   fuelType: varchar("fuel_type"),
   engineSize: varchar("engine_size"),
   co2Emissions: varchar("co2_emissions"),
   dateOfFirstRegistration: varchar("date_of_first_registration"),
-  customerName: varchar("customer_name").notNull(),
-  customerEmail: varchar("customer_email").notNull(),
-  customerPhone: varchar("customer_phone").notNull(),
-  customerAddress: varchar("customer_address").notNull(),
-  customerPostcode: varchar("customer_postcode").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Customer registry - stores all customers with contact details
+export const customers = pgTable("customers", {
+  id: varchar("id").primaryKey().notNull(),
+  name: varchar("name").notNull(),
+  email: varchar("email").notNull(),
+  phone: varchar("phone").notNull(),
+  address: varchar("address").notNull(),
+  postcode: varchar("postcode").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Vehicle-Customer relationships - tracks ownership history
+export const vehicleCustomers = pgTable("vehicle_customers", {
+  id: varchar("id").primaryKey().notNull(),
+  vrm: varchar("vrm").references(() => vehicles.vrm).notNull(),
+  customerId: varchar("customer_id").references(() => customers.id).notNull(),
+  startDate: timestamp("start_date").defaultNow(),
+  endDate: timestamp("end_date"), // null means current owner
+  isCurrentOwner: boolean("is_current_owner").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Jobs now reference vehicle and customer separately for inspections
+export const jobs = pgTable("jobs", {
+  id: varchar("id").primaryKey().notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  vrm: varchar("vrm").references(() => vehicles.vrm).notNull(),
+  customerId: varchar("customer_id").references(() => customers.id).notNull(),
   status: varchar("status").default("created").notNull(), // created, in_progress, completed, cancelled
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -103,6 +130,15 @@ export type User = typeof users.$inferSelect;
 
 export type InsertSubscription = typeof subscriptions.$inferInsert;
 export type Subscription = typeof subscriptions.$inferSelect;
+
+export type InsertVehicle = typeof vehicles.$inferInsert;
+export type Vehicle = typeof vehicles.$inferSelect;
+
+export type InsertCustomer = typeof customers.$inferInsert;
+export type Customer = typeof customers.$inferSelect;
+
+export type InsertVehicleCustomer = typeof vehicleCustomers.$inferInsert;
+export type VehicleCustomer = typeof vehicleCustomers.$inferSelect;
 
 export type InsertJob = typeof jobs.$inferInsert;
 export type Job = typeof jobs.$inferSelect;

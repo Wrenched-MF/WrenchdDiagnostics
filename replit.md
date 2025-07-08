@@ -48,7 +48,10 @@ This is a full-stack web application for Wrench'd IVHC (Independent Vehicle Heal
 - **sessions**: Session storage for authentication (required by Replit Auth)
 - **users**: User profiles with role-based access (user/admin), approval status, and Stripe integration
 - **subscriptions**: Subscription management with Stripe integration
-- **jobs**: Vehicle inspection jobs with DVLA data and customer information
+- **vehicles**: Vehicle registry storing permanent DVLA data (VRM, make, year, technical specs)
+- **customers**: Customer registry with contact details and address information
+- **vehicleCustomers**: Vehicle-customer relationships tracking ownership history and transfers
+- **jobs**: Vehicle inspection jobs linking vehicles to customers via foreign keys
 - **inspectionReports**: Vehicle inspection data storage linked to jobs
 
 ### Authentication System

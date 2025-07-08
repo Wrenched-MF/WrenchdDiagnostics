@@ -1,19 +1,28 @@
 import {
   users,
   subscriptions,
+  vehicles,
+  customers,
+  vehicleCustomers,
   jobs,
   inspectionReports,
   type User,
   type InsertUser,
   type Subscription,
   type InsertSubscription,
+  type Vehicle,
+  type InsertVehicle,
+  type Customer,
+  type InsertCustomer,
+  type VehicleCustomer,
+  type InsertVehicleCustomer,
   type Job,
   type InsertJob,
   type InspectionReport,
   type InsertInspectionReport,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, or, ilike } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -33,6 +42,23 @@ export interface IStorage {
   updateSubscriptionStatus(userId: string, status: string): Promise<User>;
   updateUserStripeInfo(userId: string, customerId: string, subscriptionId: string): Promise<User>;
   
+  // Vehicle management
+  createOrUpdateVehicle(vehicle: InsertVehicle): Promise<Vehicle>;
+  getVehicle(vrm: string): Promise<Vehicle | undefined>;
+  getAllVehicles(): Promise<Vehicle[]>;
+  
+  // Customer management
+  createCustomer(customer: InsertCustomer): Promise<Customer>;
+  getCustomer(id: string): Promise<Customer | undefined>;
+  getCustomersByVehicle(vrm: string): Promise<Customer[]>;
+  searchCustomers(query: string): Promise<Customer[]>;
+  
+  // Vehicle-Customer relationships
+  linkVehicleToCustomer(vehicleCustomer: InsertVehicleCustomer): Promise<VehicleCustomer>;
+  getCurrentOwner(vrm: string): Promise<Customer | undefined>;
+  getOwnershipHistory(vrm: string): Promise<VehicleCustomer[]>;
+  transferOwnership(vrm: string, newCustomerId: string): Promise<void>;
+  
   // Job management
   createJob(job: InsertJob): Promise<Job>;
   getJobsByUserId(userId: string): Promise<Job[]>;
@@ -47,6 +73,151 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // Vehicle management
+  async createOrUpdateVehicle(vehicle: InsertVehicle): Promise<Vehicle> {
+    const [result] = await db
+      .insert(vehicles)
+      .values(vehicle)
+      .onConflictDoUpdate({
+        target: vehicles.vrm,
+        set: {
+          make: vehicle.make,
+          model: vehicle.model,
+          year: vehicle.year,
+          colour: vehicle.colour,
+          fuelType: vehicle.fuelType,
+          engineSize: vehicle.engineSize,
+          co2Emissions: vehicle.co2Emissions,
+          dateOfFirstRegistration: vehicle.dateOfFirstRegistration,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return result;
+  }
+
+  async getVehicle(vrm: string): Promise<Vehicle | undefined> {
+    const [vehicle] = await db.select().from(vehicles).where(eq(vehicles.vrm, vrm));
+    return vehicle || undefined;
+  }
+
+  async getAllVehicles(): Promise<Vehicle[]> {
+    return await db.select().from(vehicles).orderBy(desc(vehicles.createdAt));
+  }
+
+  // Customer management
+  async createCustomer(customer: InsertCustomer): Promise<Customer> {
+    const [createdCustomer] = await db
+      .insert(customers)
+      .values(customer)
+      .returning();
+    return createdCustomer;
+  }
+
+  async getCustomer(id: string): Promise<Customer | undefined> {
+    const [customer] = await db.select().from(customers).where(eq(customers.id, id));
+    return customer || undefined;
+  }
+
+  async getCustomersByVehicle(vrm: string): Promise<Customer[]> {
+    return await db
+      .select({
+        id: customers.id,
+        name: customers.name,
+        email: customers.email,
+        phone: customers.phone,
+        address: customers.address,
+        postcode: customers.postcode,
+        createdAt: customers.createdAt,
+        updatedAt: customers.updatedAt,
+      })
+      .from(customers)
+      .innerJoin(vehicleCustomers, eq(customers.id, vehicleCustomers.customerId))
+      .where(eq(vehicleCustomers.vrm, vrm))
+      .orderBy(desc(vehicleCustomers.startDate));
+  }
+
+  async searchCustomers(query: string): Promise<Customer[]> {
+    return await db
+      .select()
+      .from(customers)
+      .where(
+        or(
+          ilike(customers.name, `%${query}%`),
+          ilike(customers.email, `%${query}%`),
+          ilike(customers.phone, `%${query}%`)
+        )
+      )
+      .orderBy(customers.name);
+  }
+
+  // Vehicle-Customer relationships
+  async linkVehicleToCustomer(vehicleCustomer: InsertVehicleCustomer): Promise<VehicleCustomer> {
+    const [linked] = await db
+      .insert(vehicleCustomers)
+      .values(vehicleCustomer)
+      .returning();
+    return linked;
+  }
+
+  async getCurrentOwner(vrm: string): Promise<Customer | undefined> {
+    const [result] = await db
+      .select({
+        id: customers.id,
+        name: customers.name,
+        email: customers.email,
+        phone: customers.phone,
+        address: customers.address,
+        postcode: customers.postcode,
+        createdAt: customers.createdAt,
+        updatedAt: customers.updatedAt,
+      })
+      .from(customers)
+      .innerJoin(vehicleCustomers, eq(customers.id, vehicleCustomers.customerId))
+      .where(
+        and(
+          eq(vehicleCustomers.vrm, vrm),
+          eq(vehicleCustomers.isCurrentOwner, true)
+        )
+      );
+    return result || undefined;
+  }
+
+  async getOwnershipHistory(vrm: string): Promise<VehicleCustomer[]> {
+    return await db
+      .select()
+      .from(vehicleCustomers)
+      .where(eq(vehicleCustomers.vrm, vrm))
+      .orderBy(desc(vehicleCustomers.startDate));
+  }
+
+  async transferOwnership(vrm: string, newCustomerId: string): Promise<void> {
+    await db.transaction(async (tx) => {
+      // End current ownership
+      await tx
+        .update(vehicleCustomers)
+        .set({
+          isCurrentOwner: false,
+          endDate: new Date(),
+        })
+        .where(
+          and(
+            eq(vehicleCustomers.vrm, vrm),
+            eq(vehicleCustomers.isCurrentOwner, true)
+          )
+        );
+
+      // Create new ownership
+      await tx.insert(vehicleCustomers).values({
+        id: `vc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        vrm,
+        customerId: newCustomerId,
+        startDate: new Date(),
+        isCurrentOwner: true,
+      });
+    });
+  }
+
   // User operations
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));

@@ -234,6 +234,11 @@ export default function CreateJob() {
         make: vehicleData.make,
         model: vehicleData.model,
         year: vehicleData.year,
+        colour: vehicleData.colour,
+        fuelType: vehicleData.fuelType,
+        engineSize: vehicleData.engineSize,
+        co2Emissions: vehicleData.co2Emissions,
+        dateOfFirstRegistration: vehicleData.dateOfFirstRegistration,
         customerName: data.name,
         customerEmail: data.email,
         customerPhone: data.phone,
@@ -336,16 +341,15 @@ export default function CreateJob() {
                   <div className="space-y-6">
                     {/* Vehicle Details Display */}
                     <div className="bg-green-600/20 border border-green-500/30 rounded-lg p-4">
-                      <h3 className="text-white font-semibold mb-2">Vehicle Details</h3>
-                      <div className="grid grid-cols-2 gap-4 text-white/80">
+                      <h3 className="text-white font-semibold mb-4">Vehicle Details</h3>
+                      
+                      {/* Read-only vehicle data from DVLA */}
+                      <div className="grid grid-cols-2 gap-4 text-white/80 mb-4">
                         <div>
                           <span className="font-medium">VRM:</span> {vehicleData.vrm}
                         </div>
                         <div>
                           <span className="font-medium">Make:</span> {vehicleData.make}
-                        </div>
-                        <div>
-                          <span className="font-medium">Model:</span> {vehicleData.model}
                         </div>
                         <div>
                           <span className="font-medium">Year:</span> {vehicleData.year}
@@ -360,6 +364,23 @@ export default function CreateJob() {
                             <span className="font-medium">Fuel Type:</span> {vehicleData.fuelType}
                           </div>
                         )}
+                        {vehicleData.engineSize && (
+                          <div>
+                            <span className="font-medium">Engine Size:</span> {vehicleData.engineSize}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Model input field since DVLA doesn't provide it */}
+                      <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3">
+                        <Label className="text-orange-300 text-sm mb-2 block">Vehicle Model (DVLA doesn't provide this)</Label>
+                        <Input
+                          placeholder="e.g. Focus, Golf, Corsa"
+                          value={vehicleData.model || ''}
+                          onChange={(e) => setVehicleData({ ...vehicleData, model: e.target.value })}
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        />
+                        <p className="text-orange-300/70 text-xs mt-1">Please enter the vehicle model manually</p>
                       </div>
                     </div>
 
