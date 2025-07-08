@@ -197,31 +197,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'VRM is required' });
       }
 
-      // Mock DVLA API response - in production, this would call the actual DVLA API
-      // For now, we'll return mock data to demonstrate the flow
-      const mockVehicleData = {
-        vrm: vrm.toUpperCase(),
-        make: 'BMW',
-        model: 'X5',
-        year: 2020,
-        colour: 'Black',
-        fuelType: 'Petrol',
-        engineSize: '3.0L',
-        co2Emissions: '190g/km',
-        dateOfFirstRegistration: '2020-03-15',
+      const cleanVrm = vrm.replace(/\s/g, '').toUpperCase();
+      
+      // Call the actual DVLA API
+      const dvlaResponse = await fetch('https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.DVLA_API_KEY || '',
+        },
+        body: JSON.stringify({
+          registrationNumber: cleanVrm
+        })
+      });
+
+      if (!dvlaResponse.ok) {
+        if (dvlaResponse.status === 404) {
+          return res.status(404).json({ message: 'Vehicle not found in DVLA database' });
+        }
+        if (dvlaResponse.status === 403) {
+          return res.status(500).json({ message: 'DVLA API key invalid or missing' });
+        }
+        throw new Error(`DVLA API error: ${dvlaResponse.status}`);
+      }
+
+      const dvlaData = await dvlaResponse.json();
+      
+      // Transform DVLA response to our format
+      const vehicleData = {
+        vrm: cleanVrm,
+        make: dvlaData.make || '',
+        model: dvlaData.model || '',
+        year: dvlaData.yearOfManufacture || new Date().getFullYear(),
+        colour: dvlaData.colour || '',
+        fuelType: dvlaData.fuelType || '',
+        engineSize: dvlaData.engineCapacity ? `${dvlaData.engineCapacity}cc` : '',
+        co2Emissions: dvlaData.co2Emissions ? `${dvlaData.co2Emissions}g/km` : '',
+        dateOfFirstRegistration: dvlaData.dateOfLastV5CIssued || dvlaData.monthOfFirstRegistration || '',
       };
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      res.json(mockVehicleData);
+      res.json(vehicleData);
     } catch (error) {
       console.error('Error looking up VRM:', error);
-      res.status(500).json({ message: 'Failed to lookup vehicle details' });
+      res.status(500).json({ message: 'Failed to lookup vehicle details from DVLA' });
     }
   });
 
-  // UK Postcode lookup
+  // UK Postcode lookup using postcodes.io (free UK postcode API)
   app.post('/api/postcode/lookup', isAuthenticated, async (req: any, res) => {
     try {
       const { postcode } = req.body;
@@ -230,25 +252,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Postcode is required' });
       }
 
-      // Mock postcode API response - in production, this would call a real postcode API
-      const mockAddressData = {
-        postcode: postcode.toUpperCase(),
+      const cleanPostcode = postcode.replace(/\s/g, '').toUpperCase();
+      
+      // Use postcodes.io free API for UK postcode lookup
+      const postcodeResponse = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
+      
+      if (!postcodeResponse.ok) {
+        if (postcodeResponse.status === 404) {
+          return res.status(404).json({ message: 'Postcode not found' });
+        }
+        throw new Error(`Postcode API error: ${postcodeResponse.status}`);
+      }
+
+      const postcodeData = await postcodeResponse.json();
+      
+      if (!postcodeData.result) {
+        return res.status(404).json({ message: 'Postcode not found' });
+      }
+
+      const result = postcodeData.result;
+      
+      // Transform to our expected format
+      const addressData = {
+        postcode: result.postcode,
         addresses: [
           {
-            formatted_address: '10 Downing Street, Westminster, London',
-            line_1: '10 Downing Street',
-            line_2: 'Westminster',
-            town_or_city: 'London',
-            county: 'Greater London',
-            country: 'England',
+            formatted_address: `${result.admin_ward}, ${result.admin_district}, ${result.country}`,
+            line_1: result.admin_ward || '',
+            line_2: result.admin_district || '',
+            town_or_city: result.admin_district || '',
+            county: result.admin_county || result.region || '',
+            country: result.country || 'England',
+            latitude: result.latitude,
+            longitude: result.longitude,
           }
         ]
       };
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      res.json(mockAddressData);
+      res.json(addressData);
     } catch (error) {
       console.error('Error looking up postcode:', error);
       res.status(500).json({ message: 'Failed to lookup postcode' });
