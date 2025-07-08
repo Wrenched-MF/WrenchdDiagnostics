@@ -143,7 +143,7 @@ export default function HomePage() {
                 <p className="text-white/80 mb-4">
                   Start a new vehicle health check inspection
                 </p>
-                <Link href="/jobs">
+                <Link href="/create-job">
                   <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
                     Start Inspection
                   </Button>
