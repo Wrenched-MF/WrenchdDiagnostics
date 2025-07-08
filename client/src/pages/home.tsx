@@ -3,8 +3,10 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wrench, FileText, Users, Settings, LogOut } from "lucide-react";
+import { Wrench, FileText, Users, Settings, LogOut, ChevronDown, User, Monitor, Smartphone, Wifi, WifiOff, Palette } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel, DropdownMenuGroup } from "@/components/ui/dropdown-menu";
+import { Switch } from "@/components/ui/switch";
 import wrenchdLogo from "@assets/wrenchd_ivhc_icon_512x512_1752010342000.png";
 
 export default function HomePage() {
@@ -63,26 +65,121 @@ export default function HomePage() {
               <h1 className="text-xl font-bold text-white">Wrench'd IVHC</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-white/80">
-                Welcome, {user?.firstName || user?.email}
-              </span>
-              {user?.role === 'admin' && (
-                <Link href="/admin">
-                  <Button variant="outline" size="sm" className="border-green-500 text-green-500 hover:bg-green-500 hover:text-white">
-                    <Users className="w-4 h-4 mr-2" />
-                    Admin
+              {/* Profile Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-white hover:bg-white/10 px-3">
+                    <User className="w-4 h-4 mr-2" />
+                    {user?.firstName || user?.username}
+                    <ChevronDown className="w-4 h-4 ml-2" />
                   </Button>
-                </Link>
-              )}
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleLogout}
-                className="border-white/20 text-white hover:bg-white hover:text-gray-900"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-72 bg-gradient-to-b from-blue-600 to-blue-700 text-white border-blue-500" align="end">
+                  <DropdownMenuLabel className="text-center py-4 border-b border-white/20">
+                    <div className="font-semibold text-lg">{user?.firstName || user?.username}</div>
+                    <div className="text-sm opacity-80">SWITCH USER / LOG OUT</div>
+                  </DropdownMenuLabel>
+                  
+                  <DropdownMenuGroup className="p-4 space-y-4">
+                    {/* Settings Grid */}
+                    <div className="grid grid-cols-3 gap-4">
+                      {/* Inspection Flow */}
+                      <div className="flex flex-col items-center space-y-2 p-3 bg-white/10 rounded-lg">
+                        <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                          <FileText className="w-4 h-4" />
+                        </div>
+                        <div className="text-xs text-center">
+                          <div className="font-medium">Inspection Flow</div>
+                          <div className="opacity-80">Dropdowns</div>
+                        </div>
+                      </div>
+                      
+                      {/* Theme Selector */}
+                      <div className="flex flex-col items-center space-y-2 p-3 bg-white/10 rounded-lg">
+                        <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                          <Palette className="w-4 h-4" />
+                        </div>
+                        <div className="text-xs text-center">
+                          <div className="font-medium">Choose Theme</div>
+                          <div className="opacity-80">Blue Theme</div>
+                        </div>
+                      </div>
+                      
+                      {/* Camera Controls */}
+                      <div className="flex flex-col items-center space-y-2 p-3 bg-white/10 rounded-lg">
+                        <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                          <Monitor className="w-4 h-4" />
+                        </div>
+                        <div className="text-xs text-center">
+                          <div className="font-medium">Camera Controls</div>
+                          <div className="opacity-80">Left</div>
+                        </div>
+                      </div>
+                      
+                      {/* Buttons */}
+                      <div className="flex flex-col items-center space-y-2 p-3 bg-white/10 rounded-lg">
+                        <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                          <Settings className="w-4 h-4" />
+                        </div>
+                        <div className="text-xs text-center">
+                          <div className="font-medium">Buttons</div>
+                          <div className="opacity-80">Settings</div>
+                        </div>
+                      </div>
+                      
+                      {/* White Theme */}
+                      <div className="flex flex-col items-center space-y-2 p-3 bg-white/20 rounded-lg">
+                        <div className="w-8 h-8 bg-white rounded flex items-center justify-center">
+                          <Smartphone className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div className="text-xs text-center">
+                          <div className="font-medium">White Theme</div>
+                        </div>
+                      </div>
+                      
+                      {/* Right Controls */}
+                      <div className="flex flex-col items-center space-y-2 p-3 bg-white/10 rounded-lg">
+                        <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+                          <Monitor className="w-4 h-4" />
+                        </div>
+                        <div className="text-xs text-center">
+                          <div className="font-medium">Right</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* WiFi Toggle */}
+                    <div className="flex items-center justify-between py-2">
+                      <div className="flex items-center space-x-2">
+                        <Wifi className="w-4 h-4" />
+                        <span className="text-sm">Turn Off WiFi Antenna Hint</span>
+                      </div>
+                      <Switch />
+                    </div>
+                  </DropdownMenuGroup>
+                  
+                  <DropdownMenuSeparator className="border-white/20" />
+                  
+                  {/* Admin Access */}
+                  {user?.role === 'admin' && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin" className="cursor-pointer">
+                        <Users className="w-4 h-4 mr-2" />
+                        Admin Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Log Out
+                  </DropdownMenuItem>
+                  
+                  <div className="p-2 text-xs text-center opacity-60 border-t border-white/20">
+                    App version: 3.2.17 Live
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -105,54 +202,54 @@ export default function HomePage() {
           {/* Dashboard Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Start New Inspection */}
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-colors">
+            <Card className="bg-gradient-to-br from-green-600 to-green-700 backdrop-blur-sm border-green-500/30 hover:from-green-500 hover:to-green-600 transition-all">
               <CardHeader>
                 <CardTitle className="flex items-center text-white">
-                  <Wrench className="w-6 h-6 mr-2 text-green-500" />
+                  <Wrench className="w-6 h-6 mr-2 text-white" />
                   New Inspection
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-white/80 mb-4">
+                <p className="text-white/90 mb-4">
                   Start a new vehicle health check inspection
                 </p>
-                <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
+                <Button className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30">
                   Start Inspection
                 </Button>
               </CardContent>
             </Card>
 
             {/* Reports */}
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-colors">
+            <Card className="bg-gradient-to-br from-green-600 to-green-700 backdrop-blur-sm border-green-500/30 hover:from-green-500 hover:to-green-600 transition-all">
               <CardHeader>
                 <CardTitle className="flex items-center text-white">
-                  <FileText className="w-6 h-6 mr-2 text-green-500" />
+                  <FileText className="w-6 h-6 mr-2 text-white" />
                   Reports ({reports.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-white/80 mb-4">
+                <p className="text-white/90 mb-4">
                   View and manage inspection reports
                 </p>
-                <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white hover:text-gray-900">
+                <Button className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30">
                   View Reports
                 </Button>
               </CardContent>
             </Card>
 
             {/* Settings */}
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-colors">
+            <Card className="bg-gradient-to-br from-green-600 to-green-700 backdrop-blur-sm border-green-500/30 hover:from-green-500 hover:to-green-600 transition-all">
               <CardHeader>
                 <CardTitle className="flex items-center text-white">
-                  <Settings className="w-6 h-6 mr-2 text-green-500" />
+                  <Settings className="w-6 h-6 mr-2 text-white" />
                   Settings
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-white/80 mb-4">
+                <p className="text-white/90 mb-4">
                   Configure app preferences and account settings
                 </p>
-                <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white hover:text-gray-900">
+                <Button className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30">
                   Settings
                 </Button>
               </CardContent>
@@ -160,7 +257,7 @@ export default function HomePage() {
           </div>
 
           {/* Recent Activity */}
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+          <Card className="bg-gradient-to-br from-green-600 to-green-700 backdrop-blur-sm border-green-500/30">
             <CardHeader>
               <CardTitle className="text-white">Recent Activity</CardTitle>
             </CardHeader>
