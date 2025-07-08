@@ -158,10 +158,28 @@ export default function CreateJob() {
         title: "Vehicle Found",
         description: `${data.make} ${data.model} (${data.year}) details loaded successfully.`,
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error("VRM lookup error:", error);
+      
+      let errorMessage = "Could not find vehicle details. Please check the VRM and try again.";
+      let errorTitle = "Vehicle Not Found";
+      
+      if (error.message.includes("403")) {
+        errorTitle = "DVLA API Access Issue";
+        errorMessage = "DVLA API access denied. Please verify your API subscription is active and has the correct permissions.";
+      } else if (error.message.includes("401")) {
+        errorTitle = "API Authentication Error";
+        errorMessage = "DVLA API key is invalid or expired. Please check your API key configuration.";
+      } else if (error.message.includes("429")) {
+        errorTitle = "Rate Limit Exceeded";
+        errorMessage = "Too many requests to DVLA API. Please wait a moment and try again.";
+      } else if (error.message.includes("404")) {
+        errorMessage = "Vehicle registration not found in DVLA database. Please verify the VRM is correct.";
+      }
+      
       toast({
-        title: "Vehicle Not Found",
-        description: "Could not find vehicle details. Please check the VRM and try again.",
+        title: errorTitle,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -275,6 +293,10 @@ export default function CreateJob() {
                               </FormControl>
                               <FormDescription className="text-white/70">
                                 Enter the vehicle's registration number to lookup details from DVLA
+                                <br />
+                                <span className="text-yellow-400 text-xs">
+                                  Note: DVLA API requires active subscription with proper permissions
+                                </span>
                               </FormDescription>
                               <FormMessage />
                             </FormItem>

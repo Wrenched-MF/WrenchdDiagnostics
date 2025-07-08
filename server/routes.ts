@@ -199,26 +199,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const cleanVrm = vrm.replace(/\s/g, '').toUpperCase();
       
+      // Check if API key is available
+      if (!process.env.DVLA_API_KEY) {
+        console.error('DVLA API key is missing');
+        return res.status(500).json({ message: 'DVLA API key is not configured' });
+      }
+
+      console.log(`Attempting DVLA lookup for VRM: ${cleanVrm}`);
+
       // Call the actual DVLA API
       const dvlaResponse = await fetch('https://driver-vehicle-licensing.api.gov.uk/vehicle-enquiry/v1/vehicles', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': process.env.DVLA_API_KEY || '',
+          'x-api-key': process.env.DVLA_API_KEY,
         },
         body: JSON.stringify({
           registrationNumber: cleanVrm
         })
       });
 
+      console.log(`DVLA API response status: ${dvlaResponse.status}`);
+
       if (!dvlaResponse.ok) {
+        const errorText = await dvlaResponse.text();
+        console.error(`DVLA API error: ${dvlaResponse.status} - ${errorText}`);
+        
         if (dvlaResponse.status === 404) {
           return res.status(404).json({ message: 'Vehicle not found in DVLA database' });
         }
         if (dvlaResponse.status === 403) {
-          return res.status(500).json({ message: 'DVLA API key invalid or missing' });
+          return res.status(403).json({ 
+            message: 'DVLA API access denied. Please check your API key permissions and subscription status with DVLA.',
+            details: 'Contact DVLA API support at dvlaapiaccess@dvla.gov.uk if this issue persists.'
+          });
         }
-        throw new Error(`DVLA API error: ${dvlaResponse.status}`);
+        if (dvlaResponse.status === 401) {
+          return res.status(401).json({ message: 'DVLA API key invalid or expired' });
+        }
+        if (dvlaResponse.status === 429) {
+          return res.status(429).json({ message: 'DVLA API rate limit exceeded. Please try again later.' });
+        }
+        throw new Error(`DVLA API error: ${dvlaResponse.status} - ${errorText}`);
       }
 
       const dvlaData = await dvlaResponse.json();
