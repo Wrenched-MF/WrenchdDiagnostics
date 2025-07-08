@@ -4,7 +4,7 @@
 
 This is a full-stack web application for Wrench'd IVHC (Independent Vehicle Health Check), built with a modern React frontend and Express.js backend. The application provides professional vehicle inspection services optimized for tablet use by mechanics, featuring user authentication, subscription management, and comprehensive admin capabilities.
 
-**Current Status**: Professional loading screen implemented with black/green gradient theme, authentication system active, admin dashboard fully functional for user and subscription management.
+**Current Status**: Complete job management system implemented with real DVLA API integration for vehicle registration lookup, UK postcode validation, and comprehensive workflow tracking from vehicle lookup to customer data collection.
 
 ## User Preferences
 
@@ -48,7 +48,8 @@ This is a full-stack web application for Wrench'd IVHC (Independent Vehicle Heal
 - **sessions**: Session storage for authentication (required by Replit Auth)
 - **users**: User profiles with role-based access (user/admin), approval status, and Stripe integration
 - **subscriptions**: Subscription management with Stripe integration
-- **inspectionReports**: Vehicle inspection data storage
+- **jobs**: Vehicle inspection jobs with DVLA data and customer information
+- **inspectionReports**: Vehicle inspection data storage linked to jobs
 
 ### Authentication System
 - OpenID Connect integration with Replit
@@ -66,6 +67,9 @@ This is a full-stack web application for Wrench'd IVHC (Independent Vehicle Heal
 - `/api/auth/*`: Authentication endpoints
 - `/api/admin/*`: Admin-only endpoints for user management
 - `/api/user/*`: User-specific endpoints for reports and data
+- `/api/jobs/*`: Job management endpoints for vehicle inspections
+- `/api/dvla/lookup`: Real DVLA API integration for vehicle registration data
+- `/api/postcode/lookup`: UK postcode validation and address lookup
 
 ## Data Flow
 
@@ -81,6 +85,8 @@ This is a full-stack web application for Wrench'd IVHC (Independent Vehicle Heal
 - **Neon Database**: PostgreSQL hosting with serverless scaling
 - **Replit Auth**: OpenID Connect authentication provider
 - **Stripe**: Payment processing (integrated but not fully implemented)
+- **DVLA API**: Official UK vehicle registration data lookup service
+- **Postcodes.io**: Free UK postcode validation and address lookup API
 
 ### Frontend Libraries
 - **Radix UI**: Accessible component primitives for shadcn/ui
