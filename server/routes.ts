@@ -258,10 +258,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dvlaData = await dvlaResponse.json();
       
       // Transform DVLA response to our format
+      // Note: DVLA API only provides manufacturer (make), not specific model
       const vehicleData = {
         vrm: cleanVrm,
         make: dvlaData.make || '',
-        model: dvlaData.model || '',
+        model: '', // DVLA doesn't provide model - user will need to enter manually
         year: dvlaData.yearOfManufacture || new Date().getFullYear(),
         colour: dvlaData.colour || '',
         fuelType: dvlaData.fuelType || '',
@@ -277,7 +278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // UK Postcode lookup using postcodes.io (free UK postcode API)
+  // UK Postcode lookup with individual addresses using getAddress.io API  
   app.post('/api/postcode/lookup', isAuthenticated, async (req: any, res) => {
     try {
       const { postcode } = req.body;
@@ -288,7 +289,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const cleanPostcode = postcode.replace(/\s/g, '').toUpperCase();
       
-      // Use postcodes.io free API for UK postcode lookup
+      // Try getAddress.io for individual addresses (if API key available)
+      if (process.env.GETADDRESS_API_KEY) {
+        try {
+          const getAddressResponse = await fetch(`https://api.getaddress.io/find/${cleanPostcode}?api-key=${process.env.GETADDRESS_API_KEY}`);
+          
+          if (getAddressResponse.ok) {
+            const getAddressData = await getAddressResponse.json();
+            
+            if (getAddressData.addresses && getAddressData.addresses.length > 0) {
+              const addresses = getAddressData.addresses.map((addr: string, index: number) => {
+                const parts = addr.split(', ');
+                return {
+                  id: index,
+                  formatted_address: addr,
+                  line_1: parts[0] || '',
+                  line_2: parts[1] || '',
+                  town_or_city: parts[parts.length - 2] || '',
+                  county: parts[parts.length - 1] || '',
+                  postcode: cleanPostcode,
+                  country: 'England',
+                };
+              });
+
+              return res.json({
+                postcode: cleanPostcode,
+                addresses: addresses,
+                source: 'getAddress.io'
+              });
+            }
+          }
+        } catch (getAddressError) {
+          console.log('getAddress.io failed, falling back to postcodes.io');
+        }
+      }
+      
+      // Create mock individual addresses for demonstration
+      const mockAddresses = [
+        { id: 0, formatted_address: `1 Example Street, ${cleanPostcode}`, line_1: '1 Example Street', postcode: cleanPostcode },
+        { id: 1, formatted_address: `2 Example Street, ${cleanPostcode}`, line_1: '2 Example Street', postcode: cleanPostcode },
+        { id: 2, formatted_address: `3 Example Street, ${cleanPostcode}`, line_1: '3 Example Street', postcode: cleanPostcode },
+        { id: 3, formatted_address: `4 Example Street, ${cleanPostcode}`, line_1: '4 Example Street', postcode: cleanPostcode },
+        { id: 4, formatted_address: `5 Example Street, ${cleanPostcode}`, line_1: '5 Example Street', postcode: cleanPostcode },
+      ];
+
+      // Use postcodes.io for postcode validation
       const postcodeResponse = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
       
       if (!postcodeResponse.ok) {
@@ -306,21 +351,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const result = postcodeData.result;
       
-      // Transform to our expected format
+      // Return mock addresses with proper town/county from postcodes.io
       const addressData = {
         postcode: result.postcode,
-        addresses: [
-          {
-            formatted_address: `${result.admin_ward}, ${result.admin_district}, ${result.country}`,
-            line_1: result.admin_ward || '',
-            line_2: result.admin_district || '',
-            town_or_city: result.admin_district || '',
-            county: result.admin_county || result.region || '',
-            country: result.country || 'England',
-            latitude: result.latitude,
-            longitude: result.longitude,
-          }
-        ]
+        addresses: mockAddresses.map(addr => ({
+          ...addr,
+          town_or_city: result.admin_district || '',
+          county: result.admin_county || result.region || '',
+          country: result.country || 'England',
+          latitude: result.latitude,
+          longitude: result.longitude,
+        })),
+        source: 'demo',
+        note: 'Demo addresses - configure getAddress.io API key for real individual addresses'
       };
 
       res.json(addressData);
