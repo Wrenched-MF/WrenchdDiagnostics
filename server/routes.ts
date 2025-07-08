@@ -78,7 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User dashboard routes
   app.get('/api/user/reports', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       const reports = await storage.getInspectionReportsByUserId(userId);
       res.json(reports);
     } catch (error) {
@@ -90,7 +90,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Enhanced job creation with vehicle and customer registry
   app.post('/api/jobs', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ message: 'Unauthorized' });
       }
@@ -162,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/jobs', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ message: 'Unauthorized' });
       }
@@ -205,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if user owns this job
-      if (job.userId !== req.user?.claims?.sub) {
+      if (job.userId !== req.user?.id) {
         return res.status(403).json({ message: 'Access denied' });
       }
 
@@ -237,7 +237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if user owns this job
-      if (job.userId !== req.user?.claims?.sub) {
+      if (job.userId !== req.user?.id) {
         return res.status(403).json({ message: 'Access denied' });
       }
 
@@ -259,7 +259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if user owns this job
-      if (job.userId !== req.user?.claims?.sub) {
+      if (job.userId !== req.user?.id) {
         return res.status(403).json({ message: 'Access denied' });
       }
 
