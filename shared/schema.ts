@@ -57,10 +57,34 @@ export const subscriptions = pgTable("subscriptions", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Jobs table for vehicle inspections
+export const jobs = pgTable("jobs", {
+  id: varchar("id").primaryKey().notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  vrm: varchar("vrm").notNull(),
+  make: varchar("make").notNull(),
+  model: varchar("model").notNull(),
+  year: varchar("year").notNull(),
+  colour: varchar("colour"),
+  fuelType: varchar("fuel_type"),
+  engineSize: varchar("engine_size"),
+  co2Emissions: varchar("co2_emissions"),
+  dateOfFirstRegistration: varchar("date_of_first_registration"),
+  customerName: varchar("customer_name").notNull(),
+  customerEmail: varchar("customer_email").notNull(),
+  customerPhone: varchar("customer_phone").notNull(),
+  customerAddress: varchar("customer_address").notNull(),
+  customerPostcode: varchar("customer_postcode").notNull(),
+  status: varchar("status").default("created").notNull(), // created, in_progress, completed, cancelled
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Vehicle inspection reports
 export const inspectionReports = pgTable("inspection_reports", {
   id: varchar("id").primaryKey(),
   userId: varchar("user_id").notNull(),
+  jobId: varchar("job_id").references(() => jobs.id),
   vehicleId: varchar("vehicle_id"),
   reportNumber: varchar("report_number").notNull().unique(),
   vehicleReg: varchar("vehicle_reg"),
@@ -79,6 +103,9 @@ export type User = typeof users.$inferSelect;
 
 export type InsertSubscription = typeof subscriptions.$inferInsert;
 export type Subscription = typeof subscriptions.$inferSelect;
+
+export type InsertJob = typeof jobs.$inferInsert;
+export type Job = typeof jobs.$inferSelect;
 
 export type InsertInspectionReport = typeof inspectionReports.$inferInsert;
 export type InspectionReport = typeof inspectionReports.$inferSelect;
