@@ -78,7 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User dashboard routes
   app.get('/api/user/reports', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = req.user?.claims?.sub;
       const reports = await storage.getInspectionReportsByUserId(userId);
       res.json(reports);
     } catch (error) {
