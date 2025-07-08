@@ -130,28 +130,50 @@ export async function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
+  console.log('Auth check:', {
+    isAuthenticated: req.isAuthenticated(),
+    hasUser: !!user,
+    userClaims: user?.claims?.sub,
+    expiresAt: user?.expires_at
+  });
+
+  if (!req.isAuthenticated() || !user) {
+    console.log('Authentication failed: no session or user');
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const now = Math.floor(Date.now() / 1000);
-  if (now <= user.expires_at) {
+  // If user has claims but no expires_at, it's likely a valid session
+  if (user.claims && user.claims.sub) {
+    console.log('Valid user session found:', user.claims.sub);
     return next();
   }
 
-  const refreshToken = user.refresh_token;
-  if (!refreshToken) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
+  // Check token expiration if available
+  if (user.expires_at) {
+    const now = Math.floor(Date.now() / 1000);
+    if (now <= user.expires_at) {
+      return next();
+    }
+
+    const refreshToken = user.refresh_token;
+    if (!refreshToken) {
+      console.log('Token expired, no refresh token');
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    try {
+      const config = await getOidcConfig();
+      const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
+      updateUserSession(user, tokenResponse);
+      return next();
+    } catch (error) {
+      console.log('Token refresh failed:', error);
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
   }
 
-  try {
-    const config = await getOidcConfig();
-    const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
-    updateUserSession(user, tokenResponse);
-    return next();
-  } catch (error) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
+  console.log('Fallback: no valid authentication found');
+  res.status(401).json({ message: "Unauthorized" });
 };
