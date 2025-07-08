@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ArrowLeft, Search, Plus, Trash2, Car, User, MapPin, Phone, Mail } from "lucide-react";
+import { ArrowLeft, Search, Plus, Trash2, Car, User, MapPin, Phone, Mail, Edit, CheckCircle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import wrenchdLogo from "@assets/wrenchd_ivhc_icon_512x512_1752010342000.png";
 
@@ -72,7 +72,7 @@ export default function CreateJob() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
-  const [currentStep, setCurrentStep] = useState<"vrm" | "customer" | "confirm">("vrm");
+  const [currentStep, setCurrentStep] = useState<"vrm" | "vehicle-manual" | "customer" | "confirm">("vrm");
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [isVrmLoading, setIsVrmLoading] = useState(false);
   const [isPostcodeLoading, setIsPostcodeLoading] = useState(false);
@@ -315,42 +315,194 @@ export default function CreateJob() {
                             </FormItem>
                           )}
                         />
-                        <Button
-                          type="submit"
-                          disabled={isVrmLoading}
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                        >
-                          {isVrmLoading ? (
-                            <>
-                              <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                              Looking up...
-                            </>
-                          ) : (
-                            <>
-                              <Search className="w-4 h-4 mr-2" />
-                              Lookup Vehicle
-                            </>
-                          )}
-                        </Button>
+                        <div className="flex gap-3">
+                          <Button
+                            type="submit"
+                            disabled={isVrmLoading}
+                            className="bg-green-600 hover:bg-green-700 text-white flex-1"
+                          >
+                            {isVrmLoading ? (
+                              <>
+                                <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                                Looking up...
+                              </>
+                            ) : (
+                              <>
+                                <Search className="w-4 h-4 mr-2" />
+                                Auto Lookup
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              const vrm = vrmForm.getValues("vrm");
+                              if (!vrm) {
+                                toast({
+                                  title: "VRM Required",
+                                  description: "Please enter a vehicle registration number first.",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+                              setVehicleData({
+                                vrm: vrm.toUpperCase(),
+                                make: "",
+                                model: "",
+                                year: new Date().getFullYear(),
+                                colour: "",
+                                fuelType: "",
+                                engineSize: "",
+                                co2Emissions: "",
+                                dateOfFirstRegistration: "",
+                              });
+                              setCurrentStep("customer");
+                            }}
+                            variant="outline"
+                            className="border-white/20 text-white hover:bg-white/10"
+                          >
+                            <Edit className="w-4 h-4 mr-2" />
+                            Manual Entry
+                          </Button>
+                        </div>
                       </form>
                     </Form>
                   </div>
                 )}
 
-                {/* Step 2: Customer Details */}
+                {/* Manual Vehicle Entry Step */}
+                {currentStep === "vehicle-manual" && (
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2 text-white">
+                      <Edit className="w-5 h-5 text-green-500" />
+                      <h3 className="text-lg font-semibold">Vehicle Details</h3>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-white">VRM</Label>
+                        <Input
+                          value={vehicleData?.vrm || ''}
+                          onChange={(e) => setVehicleData({ ...vehicleData!, vrm: e.target.value.toUpperCase() })}
+                          placeholder="e.g. AB12 CDE"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-white">Make</Label>
+                        <Input
+                          value={vehicleData?.make || ''}
+                          onChange={(e) => setVehicleData({ ...vehicleData!, make: e.target.value })}
+                          placeholder="e.g. Ford, BMW, Toyota"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-white">Model</Label>
+                        <Input
+                          value={vehicleData?.model || ''}
+                          onChange={(e) => setVehicleData({ ...vehicleData!, model: e.target.value })}
+                          placeholder="e.g. Focus, X5, Corolla"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-white">Year</Label>
+                        <Input
+                          type="number"
+                          value={vehicleData?.year || new Date().getFullYear()}
+                          onChange={(e) => setVehicleData({ ...vehicleData!, year: parseInt(e.target.value) || new Date().getFullYear() })}
+                          placeholder="e.g. 2020"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-white">Colour (Optional)</Label>
+                        <Input
+                          value={vehicleData?.colour || ''}
+                          onChange={(e) => setVehicleData({ ...vehicleData!, colour: e.target.value })}
+                          placeholder="e.g. Red, Blue, Silver"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-white">Fuel Type (Optional)</Label>
+                        <Input
+                          value={vehicleData?.fuelType || ''}
+                          onChange={(e) => setVehicleData({ ...vehicleData!, fuelType: e.target.value })}
+                          placeholder="e.g. Petrol, Diesel, Electric"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-white">Engine Size (Optional)</Label>
+                        <Input
+                          value={vehicleData?.engineSize || ''}
+                          onChange={(e) => setVehicleData({ ...vehicleData!, engineSize: e.target.value })}
+                          placeholder="e.g. 1.6L, 2000cc"
+                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex space-x-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setCurrentStep("vrm")}
+                        className="border-white/20 text-white hover:bg-white/10"
+                      >
+                        Back
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          if (!vehicleData?.vrm || !vehicleData?.make || !vehicleData?.model) {
+                            toast({
+                              title: "Required Fields Missing",
+                              description: "Please fill in VRM, Make, and Model fields.",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                          setCurrentStep("customer");
+                        }}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Continue to Customer Details
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 3: Customer Details */}
                 {currentStep === "customer" && vehicleData && (
                   <div className="space-y-6">
                     {/* Vehicle Details Display */}
                     <div className="bg-green-600/20 border border-green-500/30 rounded-lg p-4">
-                      <h3 className="text-white font-semibold mb-4">Vehicle Details</h3>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-white font-semibold">Vehicle Details</h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentStep("vehicle-manual")}
+                          className="border-white/20 text-white hover:bg-white/10"
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          Edit
+                        </Button>
+                      </div>
                       
-                      {/* Read-only vehicle data from DVLA */}
+                      {/* Vehicle data display */}
                       <div className="grid grid-cols-2 gap-4 text-white/80 mb-4">
                         <div>
                           <span className="font-medium">VRM:</span> {vehicleData.vrm}
                         </div>
                         <div>
-                          <span className="font-medium">Make:</span> {vehicleData.make}
+                          <span className="font-medium">Make:</span> {vehicleData.make || 'Not specified'}
+                        </div>
+                        <div>
+                          <span className="font-medium">Model:</span> {vehicleData.model || 'Not specified'}
                         </div>
                         <div>
                           <span className="font-medium">Year:</span> {vehicleData.year}
@@ -372,17 +524,19 @@ export default function CreateJob() {
                         )}
                       </div>
                       
-                      {/* Model input field since DVLA doesn't provide it */}
-                      <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3">
-                        <Label className="text-orange-300 text-sm mb-2 block">Vehicle Model (DVLA doesn't provide this)</Label>
-                        <Input
-                          placeholder="e.g. Focus, Golf, Corsa"
-                          value={vehicleData.model || ''}
-                          onChange={(e) => setVehicleData({ ...vehicleData, model: e.target.value })}
-                          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                        />
-                        <p className="text-orange-300/70 text-xs mt-1">Please enter the vehicle model manually</p>
-                      </div>
+                      {/* Model input field if not provided */}
+                      {!vehicleData.model && (
+                        <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3">
+                          <Label className="text-orange-300 text-sm mb-2 block">Vehicle Model Required</Label>
+                          <Input
+                            placeholder="e.g. Focus, Golf, Corsa"
+                            value={vehicleData.model || ''}
+                            onChange={(e) => setVehicleData({ ...vehicleData, model: e.target.value })}
+                            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                          />
+                          <p className="text-orange-300/70 text-xs mt-1">Please enter the vehicle model</p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Customer Form */}
@@ -537,10 +691,10 @@ export default function CreateJob() {
                             <Button
                               type="button"
                               variant="outline"
-                              onClick={() => setCurrentStep("vrm")}
+                              onClick={() => setCurrentStep("vehicle-manual")}
                               className="border-white/20 text-white hover:bg-white/10"
                             >
-                              Back
+                              Back to Vehicle Details
                             </Button>
                             <Button
                               type="submit"
