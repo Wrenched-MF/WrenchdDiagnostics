@@ -1,11 +1,14 @@
 import {
   users,
   subscriptions,
+  jobs,
   inspectionReports,
   type User,
   type InsertUser,
   type Subscription,
   type InsertSubscription,
+  type Job,
+  type InsertJob,
   type InspectionReport,
   type InsertInspectionReport,
 } from "@shared/schema";
@@ -29,6 +32,13 @@ export interface IStorage {
   getSubscriptionByUserId(userId: string): Promise<Subscription | undefined>;
   updateSubscriptionStatus(userId: string, status: string): Promise<User>;
   updateUserStripeInfo(userId: string, customerId: string, subscriptionId: string): Promise<User>;
+  
+  // Job management
+  createJob(job: InsertJob): Promise<Job>;
+  getJobsByUserId(userId: string): Promise<Job[]>;
+  getJob(id: string): Promise<Job | undefined>;
+  updateJobStatus(id: string, status: string): Promise<Job>;
+  deleteJob(id: string): Promise<void>;
   
   // Inspection reports
   createInspectionReport(report: InsertInspectionReport): Promise<InspectionReport>;
@@ -118,6 +128,54 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+
+  // Job management
+  async createJob(job: InsertJob): Promise<Job> {
+    const jobId = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const [newJob] = await db
+      .insert(jobs)
+      .values({
+        ...job,
+        id: jobId,
+      })
+      .returning();
+    
+    return newJob;
+  }
+
+  async getJobsByUserId(userId: string): Promise<Job[]> {
+    return await db
+      .select()
+      .from(jobs)
+      .where(eq(jobs.userId, userId))
+      .orderBy(desc(jobs.createdAt));
+  }
+
+  async getJob(id: string): Promise<Job | undefined> {
+    const [job] = await db
+      .select()
+      .from(jobs)
+      .where(eq(jobs.id, id));
+    
+    return job;
+  }
+
+  async updateJobStatus(id: string, status: string): Promise<Job> {
+    const [updatedJob] = await db
+      .update(jobs)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(jobs.id, id))
+      .returning();
+    
+    return updatedJob;
+  }
+
+  async deleteJob(id: string): Promise<void> {
+    await db
+      .delete(jobs)
+      .where(eq(jobs.id, id));
   }
 
   // Inspection reports
