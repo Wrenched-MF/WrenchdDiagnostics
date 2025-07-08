@@ -151,6 +151,26 @@ export default function HomePage() {
               </CardContent>
             </Card>
 
+            {/* Dashboard */}
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-colors">
+              <CardHeader>
+                <CardTitle className="flex items-center text-white">
+                  <Monitor className="w-6 h-6 mr-2 text-green-500" />
+                  Inspection Dashboard
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-white/80 mb-4">
+                  View all your vehicle inspections and job status
+                </p>
+                <Link href="/dashboard">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                    View Dashboard
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
             {/* Reports */}
             <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-colors">
               <CardHeader>
