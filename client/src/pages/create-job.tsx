@@ -293,10 +293,6 @@ export default function CreateJob() {
                               </FormControl>
                               <FormDescription className="text-white/70">
                                 Enter the vehicle's registration number to lookup details from DVLA
-                                <br />
-                                <span className="text-yellow-400 text-xs">
-                                  Note: DVLA API requires active subscription with proper permissions
-                                </span>
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
