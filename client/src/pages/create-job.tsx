@@ -75,6 +75,8 @@ export default function CreateJob() {
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [isVrmLoading, setIsVrmLoading] = useState(false);
   const [isPostcodeLoading, setIsPostcodeLoading] = useState(false);
+  const [availableAddresses, setAvailableAddresses] = useState<any[]>([]);
+  const [showAddressSelector, setShowAddressSelector] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ["/api/user"],
@@ -156,7 +158,7 @@ export default function CreateJob() {
       setCurrentStep("customer");
       toast({
         title: "Vehicle Found",
-        description: `${data.make} ${data.model} (${data.year}) details loaded successfully.`,
+        description: `${data.make} (${data.year}) details loaded from DVLA. Please enter model manually.`,
       });
     } catch (error: any) {
       console.error("VRM lookup error:", error);
@@ -194,11 +196,11 @@ export default function CreateJob() {
       const data = await res.json();
       
       if (data.addresses && data.addresses.length > 0) {
-        const address = data.addresses[0];
-        customerForm.setValue("address", address.formatted_address);
+        setAvailableAddresses(data.addresses);
+        setShowAddressSelector(true);
         toast({
-          title: "Address Found",
-          description: "Address details loaded successfully.",
+          title: "Addresses Found",
+          description: `Found ${data.addresses.length} addresses. Please select one.`,
         });
       }
     } catch (error) {
@@ -210,6 +212,15 @@ export default function CreateJob() {
     } finally {
       setIsPostcodeLoading(false);
     }
+  };
+
+  const selectAddress = (address: any) => {
+    customerForm.setValue("address", address.formatted_address);
+    setShowAddressSelector(false);
+    toast({
+      title: "Address Selected",
+      description: "Address details loaded successfully.",
+    });
   };
 
   const onVrmSubmit = (data: z.infer<typeof vrmSchema>) => {
@@ -467,6 +478,38 @@ export default function CreateJob() {
                               </FormItem>
                             )}
                           />
+
+                          {/* Address Selector */}
+                          {showAddressSelector && availableAddresses.length > 0 && (
+                            <div className="space-y-2">
+                              <Label className="text-white text-sm">Select Address:</Label>
+                              <div className="grid gap-2 max-h-48 overflow-y-auto bg-white/5 p-3 rounded-lg border border-white/20">
+                                {availableAddresses.map((address) => (
+                                  <Button
+                                    key={address.id}
+                                    type="button"
+                                    variant="ghost"
+                                    className="justify-start text-left h-auto p-3 text-white hover:bg-white/10 border border-white/10"
+                                    onClick={() => selectAddress(address)}
+                                  >
+                                    <div>
+                                      <div className="font-medium">{address.line_1}</div>
+                                      <div className="text-sm text-white/70">{address.formatted_address}</div>
+                                    </div>
+                                  </Button>
+                                ))}
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowAddressSelector(false)}
+                                className="border-white/20 text-white hover:bg-white/10"
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          )}
 
                           <div className="flex space-x-4">
                             <Button
