@@ -205,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if user owns this job
-      if (job.userId !== req.user?.id) {
+      if (job.userId !== req.user?.claims?.sub) {
         return res.status(403).json({ message: 'Access denied' });
       }
 
