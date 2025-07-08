@@ -114,7 +114,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: 'Unauthorized' });
       }
 
-      const jobs = await storage.getJobsByUserId(userId);
+      const { limit, sort } = req.query;
+      
+      let jobs = await storage.getJobsByUserId(userId);
+      
+      // Jobs are already sorted by creation date (newest first) in storage
+      
+      // If limit is specified for recent jobs, return only that many results
+      if (limit && sort === 'recent') {
+        jobs = jobs.slice(0, parseInt(limit as string));
+      }
+      
       res.json(jobs);
     } catch (error) {
       console.error('Error fetching jobs:', error);

@@ -10,6 +10,7 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import AuthPage from "@/pages/auth-page";
 import UserSettings from "@/pages/user-settings";
 import CreateJob from "@/pages/create-job";
+import InspectionDashboard from "@/pages/inspection-dashboard";
 import NotFound from "@/pages/not-found";
 import { getQueryFn } from "./lib/queryClient";
 
@@ -43,6 +44,7 @@ function Router() {
       {isAuthenticated ? (
         <>
           <Route path="/" component={HomePage} />
+          <Route path="/dashboard" component={InspectionDashboard} />
           <Route path="/admin" component={AdminDashboard} />
           <Route path="/settings" component={UserSettings} />
           <Route path="/jobs" component={CreateJob} />
