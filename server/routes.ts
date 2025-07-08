@@ -222,11 +222,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`DVLA API response status: ${dvlaResponse.status}`);
 
       if (!dvlaResponse.ok) {
-        const errorText = await dvlaResponse.text();
-        console.error(`DVLA API error: ${dvlaResponse.status} - ${errorText}`);
+        const errorResponse = await dvlaResponse.json().catch(() => null);
+        console.error(`DVLA API error: ${dvlaResponse.status}`, errorResponse);
         
         if (dvlaResponse.status === 404) {
-          return res.status(404).json({ message: 'Vehicle not found in DVLA database' });
+          // Handle DVLA's specific 404 error format
+          const errorDetail = errorResponse?.errors?.[0]?.detail || 'Vehicle not found in DVLA database';
+          return res.status(404).json({ message: errorDetail });
         }
         if (dvlaResponse.status === 403) {
           return res.status(403).json({ 
@@ -240,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (dvlaResponse.status === 429) {
           return res.status(429).json({ message: 'DVLA API rate limit exceeded. Please try again later.' });
         }
-        throw new Error(`DVLA API error: ${dvlaResponse.status} - ${errorText}`);
+        throw new Error(`DVLA API error: ${dvlaResponse.status} - ${JSON.stringify(errorResponse)}`);
       }
 
       const dvlaData = await dvlaResponse.json();
