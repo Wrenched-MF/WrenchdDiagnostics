@@ -8,6 +8,7 @@ import LoadingPage from "@/pages/loading";
 import HomePage from "@/pages/home";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AuthPage from "@/pages/auth-page";
+import UserSettings from "@/pages/user-settings";
 import NotFound from "@/pages/not-found";
 import { getQueryFn } from "./lib/queryClient";
 
@@ -42,6 +43,7 @@ function Router() {
         <>
           <Route path="/" component={HomePage} />
           <Route path="/admin" component={AdminDashboard} />
+          <Route path="/settings" component={UserSettings} />
         </>
       ) : (
         <Route path="/" component={AuthPage} />

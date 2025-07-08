@@ -74,89 +74,19 @@ export default function HomePage() {
                     <ChevronDown className="w-4 h-4 ml-2" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-72 bg-gradient-to-b from-blue-600 to-blue-700 text-white border-blue-500" align="end">
-                  <DropdownMenuLabel className="text-center py-4 border-b border-white/20">
-                    <div className="font-semibold text-lg">{user?.firstName || user?.username}</div>
-                    <div className="text-sm opacity-80">SWITCH USER / LOG OUT</div>
+                <DropdownMenuContent className="w-56 bg-gradient-to-b from-gray-900 via-gray-800 to-green-900 text-white border-green-500/30" align="end">
+                  <DropdownMenuLabel className="text-center py-3 border-b border-white/20">
+                    <div className="font-semibold text-base">{user?.firstName || user?.username}</div>
+                    <div className="text-xs opacity-80">Account Menu</div>
                   </DropdownMenuLabel>
                   
-                  <DropdownMenuGroup className="p-4 space-y-4">
-                    {/* Settings Grid */}
-                    <div className="grid grid-cols-3 gap-4">
-                      {/* Inspection Flow */}
-                      <div className="flex flex-col items-center space-y-2 p-3 bg-white/10 rounded-lg">
-                        <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
-                          <FileText className="w-4 h-4" />
-                        </div>
-                        <div className="text-xs text-center">
-                          <div className="font-medium">Inspection Flow</div>
-                          <div className="opacity-80">Dropdowns</div>
-                        </div>
-                      </div>
-                      
-                      {/* Theme Selector */}
-                      <div className="flex flex-col items-center space-y-2 p-3 bg-white/10 rounded-lg">
-                        <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
-                          <Palette className="w-4 h-4" />
-                        </div>
-                        <div className="text-xs text-center">
-                          <div className="font-medium">Choose Theme</div>
-                          <div className="opacity-80">Blue Theme</div>
-                        </div>
-                      </div>
-                      
-                      {/* Camera Controls */}
-                      <div className="flex flex-col items-center space-y-2 p-3 bg-white/10 rounded-lg">
-                        <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
-                          <Monitor className="w-4 h-4" />
-                        </div>
-                        <div className="text-xs text-center">
-                          <div className="font-medium">Camera Controls</div>
-                          <div className="opacity-80">Left</div>
-                        </div>
-                      </div>
-                      
-                      {/* Buttons */}
-                      <div className="flex flex-col items-center space-y-2 p-3 bg-white/10 rounded-lg">
-                        <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
-                          <Settings className="w-4 h-4" />
-                        </div>
-                        <div className="text-xs text-center">
-                          <div className="font-medium">Buttons</div>
-                          <div className="opacity-80">Settings</div>
-                        </div>
-                      </div>
-                      
-                      {/* White Theme */}
-                      <div className="flex flex-col items-center space-y-2 p-3 bg-white/20 rounded-lg">
-                        <div className="w-8 h-8 bg-white rounded flex items-center justify-center">
-                          <Smartphone className="w-4 h-4 text-blue-600" />
-                        </div>
-                        <div className="text-xs text-center">
-                          <div className="font-medium">White Theme</div>
-                        </div>
-                      </div>
-                      
-                      {/* Right Controls */}
-                      <div className="flex flex-col items-center space-y-2 p-3 bg-white/10 rounded-lg">
-                        <div className="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
-                          <Monitor className="w-4 h-4" />
-                        </div>
-                        <div className="text-xs text-center">
-                          <div className="font-medium">Right</div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* WiFi Toggle */}
-                    <div className="flex items-center justify-between py-2">
-                      <div className="flex items-center space-x-2">
-                        <Wifi className="w-4 h-4" />
-                        <span className="text-sm">Turn Off WiFi Antenna Hint</span>
-                      </div>
-                      <Switch />
-                    </div>
-                  </DropdownMenuGroup>
+                  {/* User Settings */}
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="cursor-pointer">
+                      <Settings className="w-4 h-4 mr-2" />
+                      User Settings
+                    </Link>
+                  </DropdownMenuItem>
                   
                   <DropdownMenuSeparator className="border-white/20" />
                   
@@ -202,54 +132,54 @@ export default function HomePage() {
           {/* Dashboard Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Start New Inspection */}
-            <Card className="bg-gradient-to-br from-green-600 to-green-700 backdrop-blur-sm border-green-500/30 hover:from-green-500 hover:to-green-600 transition-all">
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-colors">
               <CardHeader>
                 <CardTitle className="flex items-center text-white">
-                  <Wrench className="w-6 h-6 mr-2 text-white" />
+                  <Wrench className="w-6 h-6 mr-2 text-green-500" />
                   New Inspection
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-white/90 mb-4">
+                <p className="text-white/80 mb-4">
                   Start a new vehicle health check inspection
                 </p>
-                <Button className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30">
+                <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
                   Start Inspection
                 </Button>
               </CardContent>
             </Card>
 
             {/* Reports */}
-            <Card className="bg-gradient-to-br from-green-600 to-green-700 backdrop-blur-sm border-green-500/30 hover:from-green-500 hover:to-green-600 transition-all">
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-colors">
               <CardHeader>
                 <CardTitle className="flex items-center text-white">
-                  <FileText className="w-6 h-6 mr-2 text-white" />
+                  <FileText className="w-6 h-6 mr-2 text-green-500" />
                   Reports ({reports.length})
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-white/90 mb-4">
+                <p className="text-white/80 mb-4">
                   View and manage inspection reports
                 </p>
-                <Button className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30">
+                <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white hover:text-gray-900">
                   View Reports
                 </Button>
               </CardContent>
             </Card>
 
             {/* Settings */}
-            <Card className="bg-gradient-to-br from-green-600 to-green-700 backdrop-blur-sm border-green-500/30 hover:from-green-500 hover:to-green-600 transition-all">
+            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-colors">
               <CardHeader>
                 <CardTitle className="flex items-center text-white">
-                  <Settings className="w-6 h-6 mr-2 text-white" />
+                  <Settings className="w-6 h-6 mr-2 text-green-500" />
                   Settings
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-white/90 mb-4">
+                <p className="text-white/80 mb-4">
                   Configure app preferences and account settings
                 </p>
-                <Button className="w-full bg-white/20 hover:bg-white/30 text-white border-white/30">
+                <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white hover:text-gray-900">
                   Settings
                 </Button>
               </CardContent>
@@ -257,7 +187,7 @@ export default function HomePage() {
           </div>
 
           {/* Recent Activity */}
-          <Card className="bg-gradient-to-br from-green-600 to-green-700 backdrop-blur-sm border-green-500/30">
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20">
             <CardHeader>
               <CardTitle className="text-white">Recent Activity</CardTitle>
             </CardHeader>
