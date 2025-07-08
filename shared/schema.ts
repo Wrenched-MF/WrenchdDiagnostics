@@ -26,7 +26,9 @@ export const sessions = pgTable(
 // User storage table with role-based access and subscription management
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
-  email: varchar("email").unique(),
+  username: varchar("username").unique().notNull(),
+  email: varchar("email").unique().notNull(),
+  password: varchar("password").notNull(), // Encrypted password
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
@@ -72,7 +74,7 @@ export const inspectionReports = pgTable("inspection_reports", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export type UpsertUser = typeof users.$inferInsert;
+export type InsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 
 export type InsertSubscription = typeof subscriptions.$inferInsert;
@@ -83,10 +85,11 @@ export type InspectionReport = typeof inspectionReports.$inferSelect;
 
 // Schema validations
 export const insertUserSchema = createInsertSchema(users).pick({
+  username: true,
   email: true,
+  password: true,
   firstName: true,
   lastName: true,
-  profileImageUrl: true,
 });
 
 export const updateUserRoleSchema = z.object({

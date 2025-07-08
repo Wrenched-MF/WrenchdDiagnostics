@@ -1,19 +1,14 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { updateUserRoleSchema, updateSubscriptionStatusSchema } from "@shared/schema";
 import { z } from "zod";
 
 // Admin middleware to check if user has admin role
 const isAdmin = async (req: any, res: any, next: any) => {
   try {
-    const userId = req.user?.claims?.sub;
-    if (!userId) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const user = await storage.getUser(userId);
+    const user = req.user;
     if (!user || user.role !== "admin" || !user.isApproved) {
       return res.status(403).json({ message: "Access denied. Admin privileges required." });
     }
@@ -28,20 +23,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // Auth routes are now handled in auth.ts
 
   // Admin routes
   app.get('/api/admin/users', isAuthenticated, isAdmin, async (req, res) => {
@@ -96,7 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User dashboard routes
   app.get('/api/user/reports', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const reports = await storage.getInspectionReportsByUserId(userId);
       res.json(reports);
     } catch (error) {
