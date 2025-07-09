@@ -143,14 +143,12 @@ export default function VHC() {
   // Load existing data when available
   useEffect(() => {
     if (existingVhc) {
-      console.log('Loading existing VHC data:', existingVhc);
       setIsOnRamp(existingVhc.isOnRamp);
       setHasTpms(existingVhc.hasTpms);
       setTpmsType(existingVhc.tpmsType || null);
       setCurrentStage(existingVhc.currentStage);
       setSelectedTasks(existingVhc.selectedTasks || ['Wheels and tyres']);
       setCompletedTasks(existingVhc.completedTasks || []);
-      console.log('Set completed tasks:', existingVhc.completedTasks || []);
     }
   }, [existingVhc]);
 
