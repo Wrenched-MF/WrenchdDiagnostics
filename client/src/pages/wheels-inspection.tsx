@@ -27,6 +27,7 @@ interface TyreData {
   position: string;
   width: string;
   profile: string;
+  rimSize: string;
   speedRating: string;
   brand: string;
   innerTread: number;
@@ -69,8 +70,9 @@ export default function WheelsInspection() {
   ];
 
   // Real tyre specifications
-  const tyreWidths = ['155', '165', '175', '185', '195', '205', '215', '225', '235', '245', '255', '265', '275', '285', '295'];
-  const tyreProfiles = ['30', '35', '40', '45', '50', '55', '60', '65', '70', '75', '80', '85'];
+  const tyreWidths = ['155', '165', '175', '185', '195', '205', '215', '225', '235', '245', '255', '265', '275', '285', '295', '305', '315', '325', '335', '345'];
+  const tyreProfiles = ['25', '30', '35', '40', '45', '50', '55', '60', '65', '70', '75', '80', '85'];
+  const rimSizes = ['13"', '14"', '15"', '16"', '17"', '18"', '19"', '20"', '21"', '22"'];
   const speedRatings = ['L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'H', 'V', 'W', 'Y', 'Z'];
   
   // Real tyre brands
@@ -130,6 +132,7 @@ export default function WheelsInspection() {
         position: 'spare',
         width: '',
         profile: '',
+        rimSize: '',
         speedRating: '',
         brand: '',
         innerTread: 0,
@@ -161,7 +164,7 @@ export default function WheelsInspection() {
 
   // Handle tyre specs completion
   const handleSpecsComplete = () => {
-    if (currentTyre.width && currentTyre.profile && currentTyre.speedRating && currentTyre.brand) {
+    if (currentTyre.width && currentTyre.profile && currentTyre.rimSize && currentTyre.speedRating && currentTyre.brand) {
       setCurrentStep('tread');
     } else {
       toast({
@@ -192,6 +195,7 @@ export default function WheelsInspection() {
       position: currentTyre.position || '',
       width: currentTyre.width || '',
       profile: currentTyre.profile || '',
+      rimSize: currentTyre.rimSize || '',
       speedRating: currentTyre.speedRating || '',
       brand: currentTyre.brand || '',
       innerTread: currentTyre.innerTread || 0,
@@ -212,6 +216,7 @@ export default function WheelsInspection() {
     setLastTyreData({
       width: newTyre.width,
       profile: newTyre.profile,
+      rimSize: newTyre.rimSize,
       speedRating: newTyre.speedRating,
       brand: newTyre.brand,
     });
@@ -234,6 +239,7 @@ export default function WheelsInspection() {
         ...prev,
         width: lastTyreData.width,
         profile: lastTyreData.profile,
+        rimSize: lastTyreData.rimSize,
         speedRating: lastTyreData.speedRating,
         brand: lastTyreData.brand,
       }));
@@ -344,7 +350,7 @@ export default function WheelsInspection() {
                               <span className="text-gray-300 ml-2">
                                 {tyre.position === 'spare' && tyre.spareType 
                                   ? spareTypes.find(s => s.id === tyre.spareType)?.name 
-                                  : `${tyre.width}/${tyre.profile} ${tyre.speedRating} - ${tyre.brand}`
+                                  : `${tyre.width}/${tyre.profile} R${tyre.rimSize} ${tyre.speedRating} - ${tyre.brand}`
                                 }
                               </span>
                             </div>
@@ -408,101 +414,150 @@ export default function WheelsInspection() {
             {/* Tyre Specifications */}
             {currentStep === 'specs' && (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Copy from last button */}
-                  {lastTyreData && (
-                    <div className="col-span-2">
+                {/* Copy from last button */}
+                {lastTyreData && (
+                  <Button
+                    variant="outline"
+                    onClick={copyFromLast}
+                    className="w-full bg-blue-600/20 border-blue-500/50 text-white hover:bg-blue-600/30"
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy from Last Tyre
+                  </Button>
+                )}
+                
+                {/* Tyre Width Selection */}
+                <div>
+                  <Label className="text-white text-lg font-medium block mb-3">Width (mm)</Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {tyreWidths.map(width => (
                       <Button
-                        variant="outline"
-                        onClick={copyFromLast}
-                        className="w-full bg-blue-600/20 border-blue-500/50 text-white hover:bg-blue-600/30"
+                        key={width}
+                        variant={currentTyre.width === width ? "default" : "outline"}
+                        className={`h-12 text-sm font-medium ${
+                          currentTyre.width === width 
+                            ? 'bg-green-600 border-green-500 text-white' 
+                            : 'bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50'
+                        }`}
+                        onClick={() => setCurrentTyre(prev => ({ ...prev, width }))}
                       >
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copy from Last Tyre
+                        {width}
                       </Button>
-                    </div>
-                  )}
-                  
-                  {/* Width */}
-                  <div>
-                    <Label className="text-white">Width (mm)</Label>
-                    <Select value={currentTyre.width || ''} onValueChange={(value) => setCurrentTyre(prev => ({ ...prev, width: value }))}>
-                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                        <SelectValue placeholder="Select width" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-700">
-                        {tyreWidths.map(width => (
-                          <SelectItem key={width} value={width} className="text-white hover:bg-gray-700">
-                            {width}mm
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Profile */}
-                  <div>
-                    <Label className="text-white">Profile (%)</Label>
-                    <Select value={currentTyre.profile || ''} onValueChange={(value) => setCurrentTyre(prev => ({ ...prev, profile: value }))}>
-                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                        <SelectValue placeholder="Select profile" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-700">
-                        {tyreProfiles.map(profile => (
-                          <SelectItem key={profile} value={profile} className="text-white hover:bg-gray-700">
-                            {profile}%
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Speed Rating */}
-                  <div>
-                    <Label className="text-white">Speed Rating</Label>
-                    <Select value={currentTyre.speedRating || ''} onValueChange={(value) => setCurrentTyre(prev => ({ ...prev, speedRating: value }))}>
-                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                        <SelectValue placeholder="Select rating" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-700">
-                        {speedRatings.map(rating => (
-                          <SelectItem key={rating} value={rating} className="text-white hover:bg-gray-700">
-                            {rating}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Brand */}
-                  <div>
-                    <Label className="text-white">Tyre Brand</Label>
-                    <Select value={currentTyre.brand || ''} onValueChange={(value) => setCurrentTyre(prev => ({ ...prev, brand: value }))}>
-                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                        <SelectValue placeholder="Select brand" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-700">
-                        {tyreBrands.map(brand => (
-                          <SelectItem key={brand} value={brand} className="text-white hover:bg-gray-700">
-                            {brand}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    ))}
                   </div>
                 </div>
+
+                {/* Tyre Profile Selection */}
+                <div>
+                  <Label className="text-white text-lg font-medium block mb-3">Profile (%)</Label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {tyreProfiles.map(profile => (
+                      <Button
+                        key={profile}
+                        variant={currentTyre.profile === profile ? "default" : "outline"}
+                        className={`h-12 text-sm font-medium ${
+                          currentTyre.profile === profile 
+                            ? 'bg-green-600 border-green-500 text-white' 
+                            : 'bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50'
+                        }`}
+                        onClick={() => setCurrentTyre(prev => ({ ...prev, profile }))}
+                      >
+                        {profile}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Rim Size Selection */}
+                <div>
+                  <Label className="text-white text-lg font-medium block mb-3">Rim Size</Label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {rimSizes.map(rimSize => (
+                      <Button
+                        key={rimSize}
+                        variant={currentTyre.rimSize === rimSize ? "default" : "outline"}
+                        className={`h-12 text-sm font-medium ${
+                          currentTyre.rimSize === rimSize 
+                            ? 'bg-green-600 border-green-500 text-white' 
+                            : 'bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50'
+                        }`}
+                        onClick={() => setCurrentTyre(prev => ({ ...prev, rimSize }))}
+                      >
+                        {rimSize}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Speed Rating Selection */}
+                <div>
+                  <Label className="text-white text-lg font-medium block mb-3">Speed Rating</Label>
+                  <div className="grid grid-cols-6 gap-2">
+                    {speedRatings.map(rating => (
+                      <Button
+                        key={rating}
+                        variant={currentTyre.speedRating === rating ? "default" : "outline"}
+                        className={`h-12 text-sm font-medium ${
+                          currentTyre.speedRating === rating 
+                            ? 'bg-green-600 border-green-500 text-white' 
+                            : 'bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50'
+                        }`}
+                        onClick={() => setCurrentTyre(prev => ({ ...prev, speedRating: rating }))}
+                      >
+                        {rating}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Tyre Brand Selection */}
+                <div>
+                  <Label className="text-white text-lg font-medium block mb-3">Tyre Brand</Label>
+                  <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                    {tyreBrands.map(brand => (
+                      <Button
+                        key={brand}
+                        variant={currentTyre.brand === brand ? "default" : "outline"}
+                        className={`h-12 text-sm font-medium ${
+                          currentTyre.brand === brand 
+                            ? 'bg-green-600 border-green-500 text-white' 
+                            : 'bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50'
+                        }`}
+                        onClick={() => setCurrentTyre(prev => ({ ...prev, brand }))}
+                      >
+                        {brand}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Current Selection Display */}
+                {(currentTyre.width || currentTyre.profile || currentTyre.rimSize) && (
+                  <div className="bg-gray-700/30 p-4 rounded-lg border border-gray-600">
+                    <p className="text-white text-center font-medium">
+                      Current Selection: {currentTyre.width}/{currentTyre.profile} R{currentTyre.rimSize} {currentTyre.speedRating} - {currentTyre.brand}
+                    </p>
+                  </div>
+                )}
 
                 <div className="flex gap-4">
                   <Button
                     variant="outline"
-                    onClick={() => setCurrentStep('position')}
+                    onClick={() => {
+                      if (selectedPosition === 'spare') {
+                        setCurrentStep('spare_type');
+                      } else {
+                        setCurrentStep('position');
+                      }
+                    }}
                     className="flex-1 bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
                   >
                     Back
                   </Button>
                   <Button
                     onClick={handleSpecsComplete}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                    disabled={!currentTyre.width || !currentTyre.profile || !currentTyre.rimSize || !currentTyre.speedRating || !currentTyre.brand}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
                   >
                     Next: Tread Depth
                   </Button>
