@@ -75,6 +75,7 @@ export default function CreateJob() {
   const [currentStep, setCurrentStep] = useState<"vrm" | "vehicle-manual" | "customer" | "confirm">("vrm");
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [isVrmLoading, setIsVrmLoading] = useState(false);
+  const [vrmLoadingStage, setVrmLoadingStage] = useState<"connecting" | "fetching" | "processing" | "complete">("connecting");
   const [isPostcodeLoading, setIsPostcodeLoading] = useState(false);
   const [availableAddresses, setAvailableAddresses] = useState<any[]>([]);
   const [showAddressSelector, setShowAddressSelector] = useState(false);
@@ -152,15 +153,33 @@ export default function CreateJob() {
 
   const lookupVRM = async (vrm: string) => {
     setIsVrmLoading(true);
+    
     try {
+      // Stage 1: Connecting to DVLA
+      setVrmLoadingStage("connecting");
+      await new Promise(resolve => setTimeout(resolve, 500)); // Small delay for UX
+      
+      // Stage 2: Fetching vehicle data
+      setVrmLoadingStage("fetching");
       const res = await apiRequest("POST", "/api/dvla/lookup", { vrm: vrm.toUpperCase() });
+      
+      // Stage 3: Processing response
+      setVrmLoadingStage("processing");
       const data = await res.json();
+      await new Promise(resolve => setTimeout(resolve, 300)); // Small delay for UX
+      
+      // Stage 4: Complete
+      setVrmLoadingStage("complete");
       setVehicleData(data);
-      setCurrentStep("customer");
-      toast({
-        title: "Vehicle Found",
-        description: `${data.make} (${data.year}) details loaded from DVLA. Please enter model manually.`,
-      });
+      
+      setTimeout(() => {
+        setCurrentStep("customer");
+        toast({
+          title: "Vehicle Found",
+          description: `${data.make} (${data.year}) details loaded from DVLA. Please enter model manually.`,
+        });
+      }, 200);
+      
     } catch (error: any) {
       console.error("VRM lookup error:", error);
       
@@ -187,6 +206,7 @@ export default function CreateJob() {
       });
     } finally {
       setIsVrmLoading(false);
+      setVrmLoadingStage("connecting");
     }
   };
 
@@ -287,11 +307,47 @@ export default function CreateJob() {
               <CardContent className="space-y-6">
                 {/* Step 1: VRM Lookup */}
                 {currentStep === "vrm" && (
-                  <div className="space-y-4">
+                  <div className="space-y-4 relative">
                     <div className="flex items-center space-x-2 text-white">
                       <Car className="w-5 h-5 text-green-500" />
                       <h3 className="text-lg font-semibold">Step 1: Vehicle Registration</h3>
                     </div>
+                    
+                    {/* Loading Overlay */}
+                    {isVrmLoading && (
+                      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
+                        <div className="bg-white/10 rounded-lg p-6 text-center space-y-4">
+                          <div className="flex items-center justify-center space-x-2">
+                            <div className="relative">
+                              <div className="animate-spin w-8 h-8 border-3 border-green-500 border-t-transparent rounded-full" />
+                              <div className="absolute inset-0 animate-ping">
+                                <div className="w-8 h-8 border-2 border-green-400 rounded-full opacity-30" />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-white space-y-2">
+                            <p className="text-lg font-medium">
+                              {vrmLoadingStage === "connecting" && "Connecting to DVLA..."}
+                              {vrmLoadingStage === "fetching" && "Fetching vehicle data..."}
+                              {vrmLoadingStage === "processing" && "Processing response..."}
+                              {vrmLoadingStage === "complete" && "Complete!"}
+                            </p>
+                            <div className="w-48 h-2 bg-white/20 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-green-500 transition-all duration-1000 rounded-full"
+                                style={{
+                                  width: 
+                                    vrmLoadingStage === "connecting" ? "25%" :
+                                    vrmLoadingStage === "fetching" ? "50%" :
+                                    vrmLoadingStage === "processing" ? "75%" :
+                                    vrmLoadingStage === "complete" ? "100%" : "0%"
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <Form {...vrmForm}>
                       <form onSubmit={vrmForm.handleSubmit(onVrmSubmit)} className="space-y-4">
                         <FormField
@@ -301,12 +357,30 @@ export default function CreateJob() {
                             <FormItem>
                               <FormLabel className="text-white">Vehicle Registration Mark (VRM)</FormLabel>
                               <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder="e.g. AB12 CDE"
-                                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-                                  onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                                />
+                                <div className="relative">
+                                  <Input
+                                    {...field}
+                                    placeholder="e.g. AB12 CDE"
+                                    className={`bg-white/10 border-white/20 text-white placeholder:text-white/50 transition-all duration-300 ${
+                                      isVrmLoading ? 'border-green-500 bg-green-500/10' : ''
+                                    }`}
+                                    onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                                    disabled={isVrmLoading}
+                                  />
+                                  {isVrmLoading && (
+                                    <div className="absolute inset-0 pointer-events-none">
+                                      <div className="absolute bottom-0 left-0 h-0.5 bg-green-500 transition-all duration-1000 animate-pulse"
+                                           style={{
+                                             width: 
+                                               vrmLoadingStage === "connecting" ? "25%" :
+                                               vrmLoadingStage === "fetching" ? "50%" :
+                                               vrmLoadingStage === "processing" ? "75%" :
+                                               vrmLoadingStage === "complete" ? "100%" : "0%"
+                                           }}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
                               </FormControl>
                               <FormDescription className="text-white/70">
                                 Enter the vehicle's registration number to lookup details from DVLA
@@ -319,13 +393,27 @@ export default function CreateJob() {
                           <Button
                             type="submit"
                             disabled={isVrmLoading}
-                            className="bg-green-600 hover:bg-green-700 text-white flex-1"
+                            className={`flex-1 transition-all duration-300 ${
+                              isVrmLoading
+                                ? 'bg-green-600/80 cursor-not-allowed'
+                                : 'bg-green-600 hover:bg-green-700'
+                            } text-white`}
                           >
                             {isVrmLoading ? (
-                              <>
-                                <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                                Looking up...
-                              </>
+                              <div className="flex items-center justify-center space-x-2">
+                                <div className="relative">
+                                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                                  <div className="absolute inset-0 animate-pulse">
+                                    <div className="w-4 h-4 border-2 border-green-300 border-t-transparent rounded-full opacity-50" />
+                                  </div>
+                                </div>
+                                <span className="animate-pulse">
+                                  {vrmLoadingStage === "connecting" && "Connecting to DVLA..."}
+                                  {vrmLoadingStage === "fetching" && "Fetching vehicle data..."}
+                                  {vrmLoadingStage === "processing" && "Processing response..."}
+                                  {vrmLoadingStage === "complete" && "Complete!"}
+                                </span>
+                              </div>
                             ) : (
                               <>
                                 <Search className="w-4 h-4 mr-2" />
