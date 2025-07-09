@@ -4,8 +4,9 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Save, CheckCircle, Wrench } from "lucide-react";
+
+
+import { ArrowLeft, Save, CheckCircle, Wrench, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 
@@ -43,17 +44,19 @@ export default function VHC() {
   const [isOnRamp, setIsOnRamp] = useState<boolean | null>(null);
   const [hasTpms, setHasTpms] = useState<boolean | null>(null);
   const [tpmsType, setTpmsType] = useState<'direct' | 'indirect' | null>(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [selectedTasks, setSelectedTasks] = useState<string[]>(['Wheels and tyres']); // Always include wheels and tyres
 
-  // VHC inspection categories
-  const inspectionCategories = [
-    { name: "Wheels and tyres", route: "/vhc-wheels", completed: false },
-    { name: "Brakes", route: "/vhc-brakes", completed: false },
-    { name: "Steering and suspension", route: "/vhc-steering", completed: false },
-    { name: "Lights and electrics", route: "/vhc-lights", completed: false },
-    { name: "Body and structure", route: "/vhc-body", completed: false },
-    { name: "Engine and drivetrain", route: "/vhc-engine", completed: false },
-    { name: "Exhaust and emissions", route: "/vhc-exhaust", completed: false },
-    { name: "Interior and controls", route: "/vhc-interior", completed: false },
+  // Available inspection categories
+  const availableInspections = [
+    { name: "Wheels and tyres", required: true }, // Always required
+    { name: "Exhaust inspection", required: false },
+    { name: "Brake inspection", required: false },
+    { name: "Suspension inspection", required: false },
+    { name: "Servicing", required: false },
+    { name: "Air Conditioning", required: false },
+    { name: "Vehicle safety check", required: false },
+    { name: "Winter / Summer checks", required: false },
   ];
 
   // Fetch job data
@@ -277,11 +280,11 @@ export default function VHC() {
                       onClick={() => setIsOnRamp(true)}
                     >
                       <div className="flex items-center space-x-3">
-                        <Checkbox
-                          checked={isOnRamp === true}
-                          onCheckedChange={() => setIsOnRamp(true)}
-                          className="border-white/20"
-                        />
+                        <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                          isOnRamp === true ? 'border-green-500 bg-green-500' : 'border-white/30'
+                        }`}>
+                          {isOnRamp === true && <CheckCircle className="w-4 h-4 text-white" />}
+                        </div>
                         <span className="text-white font-medium">Yes</span>
                       </div>
                     </div>
@@ -294,11 +297,11 @@ export default function VHC() {
                       onClick={() => setIsOnRamp(false)}
                     >
                       <div className="flex items-center space-x-3">
-                        <Checkbox
-                          checked={isOnRamp === false}
-                          onCheckedChange={() => setIsOnRamp(false)}
-                          className="border-white/20"
-                        />
+                        <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                          isOnRamp === false ? 'border-green-500 bg-green-500' : 'border-white/30'
+                        }`}>
+                          {isOnRamp === false && <CheckCircle className="w-4 h-4 text-white" />}
+                        </div>
                         <span className="text-white font-medium">No</span>
                       </div>
                     </div>
@@ -321,11 +324,11 @@ export default function VHC() {
                       }}
                     >
                       <div className="flex items-center space-x-3">
-                        <Checkbox
-                          checked={hasTpms === true}
-                          onCheckedChange={() => setHasTpms(true)}
-                          className="border-white/20"
-                        />
+                        <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                          hasTpms === true ? 'border-green-500 bg-green-500' : 'border-white/30'
+                        }`}>
+                          {hasTpms === true && <CheckCircle className="w-4 h-4 text-white" />}
+                        </div>
                         <span className="text-white font-medium">Yes</span>
                       </div>
                     </div>
@@ -341,11 +344,11 @@ export default function VHC() {
                       }}
                     >
                       <div className="flex items-center space-x-3">
-                        <Checkbox
-                          checked={hasTpms === false}
-                          onCheckedChange={() => setHasTpms(false)}
-                          className="border-white/20"
-                        />
+                        <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                          hasTpms === false ? 'border-green-500 bg-green-500' : 'border-white/30'
+                        }`}>
+                          {hasTpms === false && <CheckCircle className="w-4 h-4 text-white" />}
+                        </div>
                         <span className="text-white font-medium">No</span>
                       </div>
                     </div>
@@ -366,11 +369,11 @@ export default function VHC() {
                         onClick={() => setTpmsType('indirect')}
                       >
                         <div className="flex items-center space-x-3">
-                          <Checkbox
-                            checked={tpmsType === 'indirect'}
-                            onCheckedChange={() => setTpmsType('indirect')}
-                            className="border-white/20"
-                          />
+                          <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                            tpmsType === 'indirect' ? 'border-green-500 bg-green-500' : 'border-white/30'
+                          }`}>
+                            {tpmsType === 'indirect' && <CheckCircle className="w-4 h-4 text-white" />}
+                          </div>
                           <span className="text-white font-medium">Indirect</span>
                         </div>
                       </div>
@@ -383,11 +386,11 @@ export default function VHC() {
                         onClick={() => setTpmsType('direct')}
                       >
                         <div className="flex items-center space-x-3">
-                          <Checkbox
-                            checked={tpmsType === 'direct'}
-                            onCheckedChange={() => setTpmsType('direct')}
-                            className="border-white/20"
-                          />
+                          <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+                            tpmsType === 'direct' ? 'border-green-500 bg-green-500' : 'border-white/30'
+                          }`}>
+                            {tpmsType === 'direct' && <CheckCircle className="w-4 h-4 text-white" />}
+                          </div>
                           <span className="text-white font-medium">Direct</span>
                         </div>
                       </div>
@@ -430,34 +433,54 @@ export default function VHC() {
                     variant="outline" 
                     size="sm"
                     className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+                    onClick={() => setShowTaskModal(true)}
                   >
+                    <Plus className="w-4 h-4 mr-2" />
                     Add Task
                   </Button>
                 </div>
 
                 {/* Main Content Area */}
                 <div className="p-6 space-y-4">
-                  {/* Wheels and tyres - Always first task */}
-                  <Button
-                    variant="outline"
-                    className="w-full bg-green-600/20 border-green-500/50 text-white hover:bg-green-600/30 py-8 text-xl font-medium justify-start"
-                    onClick={() => {
-                      toast({
-                        title: "Wheels and Tyres Inspection",
-                        description: "Opening detailed tyre inspection page...",
-                      });
-                      // Will navigate to detailed wheels inspection page
-                    }}
-                  >
-                    Wheels and tyres
-                    <CheckCircle className="w-6 h-6 ml-auto text-green-400" />
-                  </Button>
+                  {/* Display selected inspection tasks */}
+                  {selectedTasks.map((task, index) => (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      className={`w-full border-green-500/50 text-white hover:bg-green-600/30 py-6 text-lg font-medium justify-start ${
+                        task === 'Wheels and tyres' 
+                          ? 'bg-green-600/20' 
+                          : 'bg-white/10 border-white/30 hover:bg-white/20'
+                      }`}
+                      onClick={() => {
+                        if (task === 'Wheels and tyres') {
+                          toast({
+                            title: "Wheels and Tyres Inspection",
+                            description: "Opening detailed tyre inspection page...",
+                          });
+                          // Will navigate to detailed wheels inspection page
+                        } else {
+                          toast({
+                            title: task,
+                            description: "This inspection module will be available soon.",
+                          });
+                        }
+                      }}
+                    >
+                      {task}
+                      {task === 'Wheels and tyres' && (
+                        <CheckCircle className="w-5 h-5 ml-auto text-green-400" />
+                      )}
+                    </Button>
+                  ))}
 
-                  {/* Other inspection categories - will be added later */}
-                  <div className="text-center text-white/60 py-8">
-                    <p>Additional inspection tasks will appear here</p>
-                    <p className="text-sm mt-2">Use "Add Task" to include more inspection categories</p>
-                  </div>
+                  {/* Show message when only wheels and tyres is selected */}
+                  {selectedTasks.length === 1 && (
+                    <div className="text-center text-white/60 py-8">
+                      <p>Use "Add Task" to include more inspection categories</p>
+                      <p className="text-sm mt-2">Available: Exhaust, Brakes, Suspension, Servicing, A/C, Safety checks</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Bottom Right - Technician Name */}
@@ -482,6 +505,77 @@ export default function VHC() {
           </CardContent>
         </Card>
       </main>
+
+      {/* Task Selection Modal */}
+      {showTaskModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-black border border-green-500/30 rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-white text-lg font-semibold mb-4">Select Inspection Tasks</h3>
+            <div className="space-y-3 mb-6">
+              {availableInspections.map((inspection, index) => (
+                <Button
+                  key={index}
+                  variant={selectedTasks.includes(inspection.name) ? "default" : "outline"}
+                  className={`w-full justify-start ${
+                    selectedTasks.includes(inspection.name)
+                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      : 'bg-white/10 border-white/30 text-white hover:bg-white/20'
+                  } ${inspection.required ? 'opacity-60' : ''}`}
+                  onClick={() => {
+                    if (inspection.required) return; // Can't uncheck required tasks
+                    
+                    if (selectedTasks.includes(inspection.name)) {
+                      setSelectedTasks(selectedTasks.filter(task => task !== inspection.name));
+                    } else {
+                      setSelectedTasks([...selectedTasks, inspection.name]);
+                    }
+                  }}
+                  disabled={inspection.required}
+                >
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                      selectedTasks.includes(inspection.name) 
+                        ? 'border-white bg-white' 
+                        : 'border-white/30'
+                    }`}>
+                      {selectedTasks.includes(inspection.name) && (
+                        <CheckCircle className="w-3 h-3 text-green-600" />
+                      )}
+                    </div>
+                    <span>
+                      {inspection.name}
+                      {inspection.required && (
+                        <span className="text-green-400 text-xs ml-2">(Required)</span>
+                      )}
+                    </span>
+                  </div>
+                </Button>
+              ))}
+            </div>
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowTaskModal(false)}
+                className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowTaskModal(false);
+                  toast({
+                    title: "Tasks Updated",
+                    description: `${selectedTasks.length} inspection tasks selected.`,
+                  });
+                }}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Apply Tasks
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
