@@ -583,6 +583,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // VHC (Vehicle Health Check) API routes
+  app.post('/api/vhc', isAuthenticated, async (req: any, res) => {
+    try {
+      const { jobId, isOnRamp, hasTpms, tpmsType, currentStage, inspectionData } = req.body;
+
+      if (!jobId || isOnRamp === undefined || hasTpms === undefined) {
+        return res.status(400).json({ message: 'Missing required fields' });
+      }
+
+      // Check if VHC data already exists for this job
+      const existingVhc = await storage.getVhcDataByJobId(jobId);
+      
+      if (existingVhc) {
+        // Update existing VHC data
+        const updatedVhc = await storage.updateVhcData(existingVhc.id, {
+          isOnRamp,
+          hasTpms,
+          tpmsType: hasTpms ? tpmsType : null,
+          currentStage: currentStage || 'initial',
+          inspectionData,
+        });
+        
+        return res.json(updatedVhc);
+      } else {
+        // Create new VHC data
+        const newVhc = await storage.createVhcData({
+          jobId,
+          isOnRamp,
+          hasTpms,
+          tpmsType: hasTpms ? tpmsType : null,
+          currentStage: currentStage || 'initial',
+          inspectionData,
+        });
+        
+        return res.json(newVhc);
+      }
+    } catch (error) {
+      console.error('Error saving VHC data:', error);
+      res.status(500).json({ message: 'Failed to save VHC data' });
+    }
+  });
+
+  app.get('/api/vhc/:jobId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { jobId } = req.params;
+      
+      const vhc = await storage.getVhcDataByJobId(jobId);
+      
+      if (!vhc) {
+        return res.status(404).json({ message: 'VHC data not found' });
+      }
+      
+      res.json(vhc);
+    } catch (error) {
+      console.error('Error fetching VHC data:', error);
+      res.status(500).json({ message: 'Failed to fetch VHC data' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

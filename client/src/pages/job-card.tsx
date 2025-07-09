@@ -135,6 +135,8 @@ export default function JobCard() {
   const handleCategoryClick = (categoryId: string) => {
     if (categoryId === 'pre-inspection') {
       navigate(`/pre-inspection/${id}`);
+    } else if (categoryId === 'vhc') {
+      navigate(`/vhc/${id}`);
     } else {
       // Other inspection categories (to be implemented)
       console.log(`Opening ${categoryId} inspection`);

@@ -119,6 +119,19 @@ export const preInspections = pgTable("pre_inspections", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// VHC (Vehicle Health Check) data
+export const vhcData = pgTable("vhc_data", {
+  id: varchar("id").primaryKey().notNull(),
+  jobId: varchar("job_id").references(() => jobs.id).notNull(),
+  isOnRamp: boolean("is_on_ramp").notNull(),
+  hasTpms: boolean("has_tpms").notNull(),
+  tpmsType: varchar("tpms_type"), // 'direct' or 'indirect' (only if hasTpms is true)
+  currentStage: varchar("current_stage").default("initial").notNull(), // 'initial', 'inspection'
+  inspectionData: jsonb("inspection_data"), // Store all inspection checklist results
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Vehicle inspection reports
 export const inspectionReports = pgTable("inspection_reports", {
   id: varchar("id").primaryKey(),
@@ -157,6 +170,9 @@ export type Job = typeof jobs.$inferSelect;
 
 export type InsertPreInspection = typeof preInspections.$inferInsert;
 export type PreInspection = typeof preInspections.$inferSelect;
+
+export type InsertVhcData = typeof vhcData.$inferInsert;
+export type VhcData = typeof vhcData.$inferSelect;
 
 export type InsertInspectionReport = typeof inspectionReports.$inferInsert;
 export type InspectionReport = typeof inspectionReports.$inferSelect;
