@@ -262,7 +262,6 @@ export default function VHC() {
         hasTpms,
         tpmsType: hasTpms ? tpmsType : undefined,
         currentStage: 'completed' as const,
-        inspectionData: inspectionCategories,
         selectedTasks,
         completedTasks,
       };
