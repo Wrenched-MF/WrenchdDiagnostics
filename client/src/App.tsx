@@ -13,6 +13,7 @@ import CreateJob from "@/pages/create-job";
 import InspectionDashboard from "@/pages/inspection-dashboard";
 import JobCard from "@/pages/job-card";
 import PreInspection from "@/pages/pre-inspection";
+import VHC from "@/pages/vhc";
 import NotFound from "@/pages/not-found";
 import { getQueryFn } from "./lib/queryClient";
 
@@ -57,6 +58,7 @@ function Router() {
               return <PreInspection />;
             }}
           </Route>
+          <Route path="/vhc/:jobId" component={VHC} />
         </>
       ) : (
         <Route path="/" component={AuthPage} />

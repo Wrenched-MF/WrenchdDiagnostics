@@ -6,6 +6,7 @@ import {
   vehicleCustomers,
   jobs,
   preInspections,
+  vhcData,
   inspectionReports,
   type User,
   type InsertUser,
@@ -21,6 +22,8 @@ import {
   type InsertJob,
   type PreInspection,
   type InsertPreInspection,
+  type VhcData,
+  type InsertVhcData,
   type InspectionReport,
   type InsertInspectionReport,
 } from "@shared/schema";
@@ -73,6 +76,11 @@ export interface IStorage {
   createPreInspection(preInspection: Omit<InsertPreInspection, 'id'>): Promise<PreInspection>;
   getPreInspectionByJobId(jobId: string): Promise<PreInspection | undefined>;
   updatePreInspection(id: string, data: Partial<PreInspection>): Promise<PreInspection>;
+
+  // VHC management
+  createVhcData(vhc: Omit<InsertVhcData, 'id'>): Promise<VhcData>;
+  getVhcDataByJobId(jobId: string): Promise<VhcData | undefined>;
+  updateVhcData(id: string, data: Partial<VhcData>): Promise<VhcData>;
 
   // Inspection reports
   createInspectionReport(report: InsertInspectionReport): Promise<InspectionReport>;
@@ -389,6 +397,40 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updatedPreInspection;
+  }
+
+  // VHC management
+  async createVhcData(vhc: Omit<InsertVhcData, 'id'>): Promise<VhcData> {
+    const vhcId = `vhc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const [newVhc] = await db
+      .insert(vhcData)
+      .values({
+        ...vhc,
+        id: vhcId,
+      })
+      .returning();
+    
+    return newVhc;
+  }
+
+  async getVhcDataByJobId(jobId: string): Promise<VhcData | undefined> {
+    const [vhc] = await db
+      .select()
+      .from(vhcData)
+      .where(eq(vhcData.jobId, jobId));
+    
+    return vhc;
+  }
+
+  async updateVhcData(id: string, data: Partial<VhcData>): Promise<VhcData> {
+    const [updatedVhc] = await db
+      .update(vhcData)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(vhcData.id, id))
+      .returning();
+    
+    return updatedVhc;
   }
 
   // Inspection reports
