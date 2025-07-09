@@ -292,6 +292,39 @@ export default function WheelsInspection() {
   const completedPositions = allTyres.map(t => t.position);
   const remainingPositions = tyrePositions.filter(p => !completedPositions.includes(p.id));
 
+  // Mark task as completed in VHC
+  const markVhcTaskCompleted = async (taskName: string) => {
+    try {
+      // Fetch current VHC data to get completed tasks
+      const vhcResponse = await fetch(`/api/vhc/${jobId}`, {
+        credentials: 'include'
+      });
+      
+      if (vhcResponse.ok) {
+        const vhcData = await vhcResponse.json();
+        const completedTasks = vhcData.completedTasks || [];
+        
+        // Add this task to completed tasks if not already present
+        if (!completedTasks.includes(taskName)) {
+          const updatedCompletedTasks = [...completedTasks, taskName];
+          
+          // Update VHC with new completed tasks
+          await apiRequest('POST', '/api/vhc', {
+            jobId,
+            selectedTasks: vhcData.selectedTasks || [taskName],
+            completedTasks: updatedCompletedTasks,
+            isOnRamp: vhcData.isOnRamp,
+            hasTpms: vhcData.hasTpms,
+            tpmsType: vhcData.tpmsType,
+            currentStage: vhcData.currentStage || 'inspection'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error marking VHC task as completed:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
       <div className="container mx-auto p-4">
@@ -366,37 +399,16 @@ export default function WheelsInspection() {
                     <Button
                       onClick={async () => {
                         // Mark task as completed in VHC
-                        try {
-                          const vhcResponse = await fetch(`/api/vhc/${jobId}`, {
-                            credentials: 'include'
-                          });
-                          
-                          if (vhcResponse.ok) {
-                            const vhcData = await vhcResponse.json();
-                            const completedTasks = vhcData.completedTasks || [];
-                            
-                            if (!completedTasks.includes('Wheels and tyres')) {
-                              const updatedCompleted = [...completedTasks, 'Wheels and tyres'];
-                              
-                              await apiRequest('POST', '/api/vhc', {
-                                jobId,
-                                isOnRamp: vhcData.isOnRamp,
-                                hasTpms: vhcData.hasTpms,
-                                tpmsType: vhcData.tpmsType,
-                                currentStage: vhcData.currentStage,
-                                selectedTasks: vhcData.selectedTasks,
-                                completedTasks: updatedCompleted,
-                              });
-                            }
-                          }
-                        } catch (error) {
-                          console.error('Error updating VHC completion status:', error);
-                        }
+                        await markVhcTaskCompleted('Wheels and tyres');
+                        toast({
+                          title: "Wheels & Tyres Complete",
+                          description: "Inspection completed and marked in VHC checklist.",
+                        });
                         navigate(`/vhc/${jobId}`);
                       }}
                       className="bg-green-600 hover:bg-green-700 text-white"
                     >
-                      Return to VHC
+                      Complete Inspection
                     </Button>
                   </div>
                 )}
