@@ -120,7 +120,7 @@ export default function CreateJob() {
         title: "Job Created",
         description: "Vehicle inspection job has been created successfully.",
       });
-      navigate("/jobs");
+      navigate("/dashboard");
     },
     onError: (error: Error) => {
       toast({
