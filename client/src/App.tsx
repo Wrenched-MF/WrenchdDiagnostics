@@ -1,81 +1,21 @@
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { useState, useEffect } from "react";
-import LoadingPage from "@/pages/loading";
-import HomePage from "@/pages/home";
-import AdminDashboard from "@/pages/admin-dashboard";
-import AuthPage from "@/pages/auth-page";
-import UserSettings from "@/pages/user-settings";
-import CreateJob from "@/pages/create-job";
-import InspectionDashboard from "@/pages/inspection-dashboard";
-import JobCard from "@/pages/job-card";
-import PreInspection from "@/pages/pre-inspection";
-import VHCSimple from "@/pages/vhc-simple";
-import NotFound from "@/pages/not-found";
-import { getQueryFn } from "./lib/queryClient";
-
-function Router() {
-  const [showLoading, setShowLoading] = useState(true);
-  
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["/api/user"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
-    retry: false,
-  });
-
-  useEffect(() => {
-    // Show loading screen for at least 3 seconds on initial load
-    const timer = setTimeout(() => {
-      setShowLoading(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Show loading screen if auth is loading or during initial app load
-  if (isLoading || showLoading) {
-    return <LoadingPage onComplete={() => setShowLoading(false)} />;
-  }
-
-  const isAuthenticated = !!user;
-
-  return (
-    <Switch>
-      {isAuthenticated ? (
-        <>
-          <Route path="/" component={HomePage} />
-          <Route path="/dashboard" component={InspectionDashboard} />
-          <Route path="/admin" component={AdminDashboard} />
-          <Route path="/settings" component={UserSettings} />
-          <Route path="/create-job" component={CreateJob} />
-          <Route path="/jobs/:id" component={JobCard} />
-          <Route path="/pre-inspection/:jobId">
-            {(params) => {
-              console.log('Pre-inspection route matched with params:', params);
-              return <PreInspection />;
-            }}
-          </Route>
-          <Route path="/vhc/:jobId" component={VHCSimple} />
-        </>
-      ) : (
-        <Route path="/" component={AuthPage} />
-      )}
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
+import { useState } from "react";
 
 function App() {
+  const [message, setMessage] = useState("Wrench'd IVHC - System Initializing");
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white flex items-center justify-center">
+      <div className="text-center space-y-6">
+        <h1 className="text-4xl font-bold text-green-400">Wrench'd IVHC</h1>
+        <p className="text-gray-300 text-lg">{message}</p>
+        <button 
+          onClick={() => setMessage("System Ready - Please login to continue")}
+          className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg text-white font-medium transition-colors"
+        >
+          Initialize System
+        </button>
+      </div>
+    </div>
   );
 }
 
