@@ -84,14 +84,11 @@ export default function VHC() {
   // Save VHC data mutation
   const saveVhcMutation = useMutation({
     mutationFn: async (data: Partial<VHCData>) => {
-      return await apiRequest('/api/vhc', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jobId,
-          ...data
-        }),
+      const response = await apiRequest('POST', '/api/vhc', {
+        jobId,
+        ...data
       });
+      return response.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/vhc', jobId] });
