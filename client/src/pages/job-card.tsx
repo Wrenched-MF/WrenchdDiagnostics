@@ -214,27 +214,40 @@ export default function JobCard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-white/80">
-                  <div>
-                    <span className="font-medium">VRM:</span> {job.vrm}
-                  </div>
-                  <div>
-                    <span className="font-medium">Make:</span> {job.vehicle?.make || 'Unknown'}
-                  </div>
-                  <div>
-                    <span className="font-medium">Model:</span> {job.vehicle?.model || 'Unknown'}
-                  </div>
-                  <div>
-                    <span className="font-medium">Year:</span> {job.vehicle?.year || 'Unknown'}
-                  </div>
+                {/* Primary Vehicle Details */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Badge className="bg-green-600/20 text-green-400 border-green-500/30 px-3 py-1">
+                    VRM: {job.vrm}
+                  </Badge>
+                  <Badge className="bg-blue-600/20 text-blue-400 border-blue-500/30 px-3 py-1">
+                    {job.vehicle?.make || 'Unknown Make'}
+                  </Badge>
+                  <Badge className="bg-purple-600/20 text-purple-400 border-purple-500/30 px-3 py-1">
+                    {job.vehicle?.model || 'Unknown Model'}
+                  </Badge>
+                  <Badge className="bg-yellow-600/20 text-yellow-400 border-yellow-500/30 px-3 py-1">
+                    {job.vehicle?.year || 'Unknown Year'}
+                  </Badge>
+                </div>
+                
+                {/* Additional Vehicle Details */}
+                <div className="grid grid-cols-2 gap-3 text-white/80 text-sm">
                   {job.vehicle?.colour && (
-                    <div>
-                      <span className="font-medium">Colour:</span> {job.vehicle.colour}
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                      <span>Colour: {job.vehicle.colour}</span>
                     </div>
                   )}
                   {job.vehicle?.fuelType && (
-                    <div>
-                      <span className="font-medium">Fuel:</span> {job.vehicle.fuelType}
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                      <span>Fuel: {job.vehicle.fuelType}</span>
+                    </div>
+                  )}
+                  {job.vehicle?.engineSize && (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                      <span>Engine: {job.vehicle.engineSize}</span>
                     </div>
                   )}
                 </div>
@@ -250,24 +263,34 @@ export default function JobCard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Customer Name Badge */}
+                <div className="mb-4">
+                  <Badge className="bg-green-600/20 text-green-400 border-green-500/30 px-3 py-2 text-base">
+                    <User className="w-4 h-4 mr-2" />
+                    {job.customer?.name || 'Unknown Customer'}
+                  </Badge>
+                </div>
+                
+                {/* Contact Information */}
                 <div className="space-y-3 text-white/80">
-                  <div className="flex items-center space-x-2">
-                    <User className="w-4 h-4 text-green-500" />
-                    <span className="font-medium">{job.customer?.name || 'Unknown Customer'}</span>
+                  <div className="flex items-center space-x-3 p-2 bg-white/5 rounded-lg">
+                    <Phone className="w-4 h-4 text-blue-400" />
+                    <span className="font-medium">{job.customer?.phone || 'No phone provided'}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Phone className="w-4 h-4 text-green-500" />
-                    <span>{job.customer?.phone || 'No phone'}</span>
+                  <div className="flex items-center space-x-3 p-2 bg-white/5 rounded-lg">
+                    <Mail className="w-4 h-4 text-purple-400" />
+                    <span className="text-sm">{job.customer?.email || 'No email provided'}</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Mail className="w-4 h-4 text-green-500" />
-                    <span>{job.customer?.email || 'No email'}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="w-4 h-4 text-green-500" />
-                    <span className="text-sm">
-                      {job.customer?.address || 'No address'}, {job.customer?.postcode || ''}
-                    </span>
+                  <div className="flex items-start space-x-3 p-2 bg-white/5 rounded-lg">
+                    <MapPin className="w-4 h-4 text-orange-400 mt-0.5" />
+                    <div className="text-sm">
+                      <div>{job.customer?.address || 'No address provided'}</div>
+                      {job.customer?.postcode && (
+                        <Badge className="bg-orange-600/20 text-orange-400 border-orange-500/30 mt-1 text-xs">
+                          {job.customer.postcode}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
               </CardContent>
