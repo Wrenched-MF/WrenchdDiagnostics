@@ -196,9 +196,43 @@ export default function WinterChecks() {
     }
   }, [winterData.batterySystem, winterData.heatingSystem, winterData.coldWeatherPrep, winterData.tyreAssessment, winterData.emergencyPrep]);
 
+  // Mark task as completed in VHC
+  const markVhcTaskCompleted = async (taskName: string) => {
+    try {
+      const vhcResponse = await fetch(`/api/vhc/${jobId}`, {
+        credentials: 'include'
+      });
+      
+      if (vhcResponse.ok) {
+        const vhcData = await vhcResponse.json();
+        const completedTasks = vhcData.completedTasks || [];
+        
+        if (!completedTasks.includes(taskName)) {
+          const updatedCompleted = [...completedTasks, taskName];
+          
+          await apiRequest('POST', '/api/vhc', {
+            jobId,
+            isOnRamp: vhcData.isOnRamp,
+            hasTpms: vhcData.hasTpms,
+            tpmsType: vhcData.tpmsType,
+            currentStage: vhcData.currentStage,
+            selectedTasks: vhcData.selectedTasks,
+            completedTasks: updatedCompleted,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error updating VHC completion status:', error);
+    }
+  };
+
   // Save inspection
-  const saveInspection = () => {
+  const saveInspection = async () => {
     setWinterData(prev => ({ ...prev, status: 'completed' }));
+    
+    // Mark the task as completed in VHC
+    await markVhcTaskCompleted('Winter checks');
+    
     toast({
       title: "Winter Checks Complete",
       description: `Overall condition: ${winterData.overallCondition?.toUpperCase()}`,
