@@ -199,7 +199,7 @@ export default function PreInspection() {
         description: "All pre-inspection data has been saved successfully.",
       });
       
-      navigate(`/job-card/${jobId}`);
+      navigate(`/jobs/${jobId}`);
     },
     onError: (error: Error) => {
       toast({
@@ -246,7 +246,7 @@ export default function PreInspection() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate(`/job-card/${jobId}`)}
+                onClick={() => navigate(`/jobs/${jobId}`)}
                 className="text-white hover:bg-white/10"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
