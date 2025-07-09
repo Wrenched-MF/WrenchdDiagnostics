@@ -84,10 +84,22 @@ export default function JobCard() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
-  const { data: job, isLoading } = useQuery<JobCardData>({
+  const { data: job, isLoading, error } = useQuery<JobCardData>({
     queryKey: ['/api/jobs', id],
+    queryFn: async () => {
+      const response = await fetch(`/api/jobs/${id}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch job: ${response.status}`);
+      }
+      return response.json();
+    },
     enabled: !!id,
   });
+
+  // Debug logging
+  console.log('Job card data:', { job, isLoading, error, id });
 
   const updateStatusMutation = useMutation({
     mutationFn: async (status: string) => {
