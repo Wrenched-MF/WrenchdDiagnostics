@@ -133,12 +133,16 @@ export default function JobCard() {
   };
 
   const handleCategoryClick = (categoryId: string) => {
-    // Navigate to inspection category page (to be implemented)
-    console.log(`Opening ${categoryId} inspection`);
-    toast({
-      title: "Inspection Category",
-      description: `${categoryId} inspection will be implemented next.`,
-    });
+    if (categoryId === 'pre-inspection') {
+      navigate(`/pre-inspection/${id}`);
+    } else {
+      // Other inspection categories (to be implemented)
+      console.log(`Opening ${categoryId} inspection`);
+      toast({
+        title: "Inspection Category",
+        description: `${categoryId} inspection will be implemented next.`,
+      });
+    }
   };
 
   if (isLoading) {
