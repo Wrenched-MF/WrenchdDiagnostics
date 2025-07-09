@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,6 +54,9 @@ export default function PreInspection() {
   const [damageMarkers, setDamageMarkers] = useState<DamageMarker[]>([]);
   const [mileage, setMileage] = useState<string>('');
   const [selectedSeverity, setSelectedSeverity] = useState<'minor' | 'moderate' | 'severe'>('minor');
+  const [cameraReady, setCameraReady] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [capturing, setCapturing] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -72,9 +75,19 @@ export default function PreInspection() {
     enabled: !!jobId,
   });
 
+  // Auto-start camera when component mounts and on photo step
+  useEffect(() => {
+    if (currentStep === 'photo' && !capturedPhoto) {
+      startCamera();
+    }
+  }, [currentStep, capturedPhoto, startCamera]);
+
   // Start camera for photo capture
   const startCamera = useCallback(async () => {
     try {
+      setCameraError(null);
+      setCameraReady(false);
+      
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           facingMode: 'environment', // Use back camera on mobile
@@ -82,11 +95,20 @@ export default function PreInspection() {
           height: { ideal: 1080 }
         } 
       });
+      
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.onloadedmetadata = () => {
+          setCameraReady(true);
+          toast({
+            title: "Camera Ready",
+            description: "Tap anywhere on the video to capture a photo!",
+          });
+        };
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
+      setCameraError('Unable to access camera. You can upload a photo instead.');
       toast({
         title: "Camera Error",
         description: "Unable to access camera. You can upload a photo instead.",
@@ -97,7 +119,9 @@ export default function PreInspection() {
 
   // Capture photo from camera
   const capturePhoto = useCallback(() => {
-    if (videoRef.current && canvasRef.current) {
+    if (videoRef.current && canvasRef.current && cameraReady && !capturing) {
+      setCapturing(true);
+      
       const canvas = canvasRef.current;
       const video = videoRef.current;
       
@@ -108,18 +132,24 @@ export default function PreInspection() {
       ctx?.drawImage(video, 0, 0);
       
       const photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-      setCapturedPhoto(photoDataUrl);
       
-      // Stop camera stream
-      const stream = video.srcObject as MediaStream;
-      stream?.getTracks().forEach(track => track.stop());
-      
-      toast({
-        title: "Photo Captured",
-        description: "Vehicle photo captured successfully.",
-      });
+      // Add a brief flash effect
+      setTimeout(() => {
+        setCapturedPhoto(photoDataUrl);
+        
+        // Stop camera stream
+        const stream = video.srcObject as MediaStream;
+        stream?.getTracks().forEach(track => track.stop());
+        setCameraReady(false);
+        setCapturing(false);
+        
+        toast({
+          title: "Photo Captured",
+          description: "Vehicle photo captured successfully.",
+        });
+      }, 100);
     }
-  }, [toast]);
+  }, [toast, cameraReady, capturing]);
 
   // Handle file upload
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -312,19 +342,65 @@ export default function PreInspection() {
               <div className="space-y-6">
                 {!capturedPhoto ? (
                   <div className="space-y-4">
-                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                    {/* Camera loading state */}
+                    {!cameraReady && !cameraError && (
+                      <div className="aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center">
+                        <div className="text-center text-white">
+                          <div className="animate-spin w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full mx-auto mb-2" />
+                          <p>Starting camera...</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Camera error state */}
+                    {cameraError && (
+                      <div className="aspect-video bg-red-900/20 rounded-lg overflow-hidden flex items-center justify-center">
+                        <div className="text-center text-white">
+                          <Camera className="w-12 h-12 mx-auto mb-2 text-red-400" />
+                          <p className="text-red-400">{cameraError}</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Live camera view - clickable for one-click capture */}
+                    <div 
+                      className={`aspect-video bg-black rounded-lg overflow-hidden relative ${
+                        cameraReady && !capturing ? 'cursor-pointer' : ''
+                      }`}
+                      onClick={cameraReady && !capturing ? capturePhoto : undefined}
+                    >
                       <video
                         ref={videoRef}
                         autoPlay
                         playsInline
                         className="w-full h-full object-cover"
-                        onLoadedMetadata={startCamera}
                       />
+                      
+                      {/* Capture flash effect */}
+                      {capturing && (
+                        <div className="absolute inset-0 bg-white animate-pulse opacity-75" />
+                      )}
+                      
+                      {/* One-click capture overlay */}
+                      {cameraReady && !capturing && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/10 hover:bg-black/20 transition-colors">
+                          <div className="bg-green-600/90 text-white px-6 py-3 rounded-lg flex items-center space-x-2 shadow-lg">
+                            <Camera className="w-5 h-5" />
+                            <span className="font-medium">Tap to Capture</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
+                    
                     <canvas ref={canvasRef} className="hidden" />
                     
+                    {/* Alternative options */}
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                      <Button onClick={capturePhoto} className="bg-green-600 hover:bg-green-700">
+                      <Button 
+                        onClick={capturePhoto} 
+                        disabled={!cameraReady}
+                        className="bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                      >
                         <Camera className="w-4 h-4 mr-2" />
                         Capture Photo
                       </Button>
@@ -356,7 +432,10 @@ export default function PreInspection() {
                     <div className="flex justify-center gap-4">
                       <Button 
                         variant="outline"
-                        onClick={() => setCapturedPhoto(null)}
+                        onClick={() => {
+                          setCapturedPhoto(null);
+                          setCameraReady(false);
+                        }}
                         className="border-white/20 text-white hover:bg-white/10"
                       >
                         Retake Photo
