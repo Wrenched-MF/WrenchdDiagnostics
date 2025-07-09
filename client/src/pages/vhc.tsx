@@ -5,7 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Save, CheckCircle, Wrench } from "lucide-react";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { ArrowLeft, Save, CheckCircle, Wrench, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 
@@ -43,18 +49,39 @@ export default function VHC() {
   const [isOnRamp, setIsOnRamp] = useState<boolean | null>(null);
   const [hasTpms, setHasTpms] = useState<boolean | null>(null);
   const [tpmsType, setTpmsType] = useState<'direct' | 'indirect' | null>(null);
+  const [selectedTasks, setSelectedTasks] = useState<string[]>(['Wheels and tyres']); // Default task
 
-  // VHC inspection categories
-  const inspectionCategories = [
-    { name: "Wheels and tyres", route: "/vhc-wheels", completed: false },
-    { name: "Brakes", route: "/vhc-brakes", completed: false },
-    { name: "Steering and suspension", route: "/vhc-steering", completed: false },
-    { name: "Lights and electrics", route: "/vhc-lights", completed: false },
-    { name: "Body and structure", route: "/vhc-body", completed: false },
-    { name: "Engine and drivetrain", route: "/vhc-engine", completed: false },
-    { name: "Exhaust and emissions", route: "/vhc-exhaust", completed: false },
-    { name: "Interior and controls", route: "/vhc-interior", completed: false },
+  // Available inspection tasks
+  const availableTasks = [
+    'Wheels and tyres',
+    'Brake inspection',
+    'Exhaust inspection',
+    'Air conditioning',
+    'Summer checks',
+    'Winter checks'
   ];
+
+  // Add task to selected list
+  const addTask = (taskName: string) => {
+    if (!selectedTasks.includes(taskName)) {
+      setSelectedTasks([...selectedTasks, taskName]);
+      toast({
+        title: "Task Added",
+        description: `${taskName} has been added to the inspection checklist.`,
+      });
+    }
+  };
+
+  // Remove task from selected list
+  const removeTask = (taskName: string) => {
+    if (taskName !== 'Wheels and tyres') { // Don't allow removing default task
+      setSelectedTasks(selectedTasks.filter(task => task !== taskName));
+      toast({
+        title: "Task Removed",
+        description: `${taskName} has been removed from the inspection checklist.`,
+      });
+    }
+  };
 
   // Fetch job data
   const { data: job } = useQuery<JobData>({
@@ -426,107 +453,85 @@ export default function VHC() {
                     <ArrowLeft className="w-5 h-5" />
                     Go Back
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="bg-white/20 border-white/30 text-white hover:bg-white/30"
-                  >
-                    Add Task
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Task
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-gray-800 border-gray-700">
+                      {availableTasks
+                        .filter(task => !selectedTasks.includes(task))
+                        .map((task) => (
+                          <DropdownMenuItem
+                            key={task}
+                            onClick={() => addTask(task)}
+                            className="text-white hover:bg-gray-700 cursor-pointer"
+                          >
+                            {task}
+                          </DropdownMenuItem>
+                        ))}
+                      {availableTasks.filter(task => !selectedTasks.includes(task)).length === 0 && (
+                        <DropdownMenuItem disabled className="text-gray-400">
+                          All tasks added
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
 
                 {/* Main Content Area */}
                 <div className="p-6 space-y-4">
-                  {/* Wheels and tyres - Always first task */}
-                  <Button
-                    variant="outline"
-                    className="w-full bg-green-600/20 border-green-500/50 text-white hover:bg-green-600/30 py-8 text-xl font-medium justify-start"
-                    onClick={() => {
-                      toast({
-                        title: "Wheels and Tyres Inspection",
-                        description: "Opening detailed tyre inspection page...",
-                      });
-                      // Will navigate to detailed wheels inspection page
-                    }}
-                  >
-                    Wheels and tyres
-                    <CheckCircle className="w-6 h-6 ml-auto text-green-400" />
-                  </Button>
-
-                  {/* Brake Inspection */}
-                  <Button
-                    variant="outline"
-                    className="w-full bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50 py-8 text-xl font-medium justify-start"
-                    onClick={() => {
-                      toast({
-                        title: "Brake Inspection",
-                        description: "Opening brake system inspection...",
-                      });
-                    }}
-                  >
-                    Brake inspection
-                    <div className="w-6 h-6 ml-auto border-2 border-gray-400 rounded-full" />
-                  </Button>
-
-                  {/* Exhaust Inspection */}
-                  <Button
-                    variant="outline"
-                    className="w-full bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50 py-8 text-xl font-medium justify-start"
-                    onClick={() => {
-                      toast({
-                        title: "Exhaust Inspection",
-                        description: "Opening exhaust system inspection...",
-                      });
-                    }}
-                  >
-                    Exhaust inspection
-                    <div className="w-6 h-6 ml-auto border-2 border-gray-400 rounded-full" />
-                  </Button>
-
-                  {/* Air Conditioning */}
-                  <Button
-                    variant="outline"
-                    className="w-full bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50 py-8 text-xl font-medium justify-start"
-                    onClick={() => {
-                      toast({
-                        title: "Air Conditioning",
-                        description: "Opening air conditioning inspection...",
-                      });
-                    }}
-                  >
-                    Air conditioning
-                    <div className="w-6 h-6 ml-auto border-2 border-gray-400 rounded-full" />
-                  </Button>
-
-                  {/* Summer Checks */}
-                  <Button
-                    variant="outline"
-                    className="w-full bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50 py-8 text-xl font-medium justify-start"
-                    onClick={() => {
-                      toast({
-                        title: "Summer Checks",
-                        description: "Opening summer inspection checklist...",
-                      });
-                    }}
-                  >
-                    Summer checks
-                    <div className="w-6 h-6 ml-auto border-2 border-gray-400 rounded-full" />
-                  </Button>
-
-                  {/* Winter Checks */}
-                  <Button
-                    variant="outline"
-                    className="w-full bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50 py-8 text-xl font-medium justify-start"
-                    onClick={() => {
-                      toast({
-                        title: "Winter Checks",
-                        description: "Opening winter inspection checklist...",
-                      });
-                    }}
-                  >
-                    Winter checks
-                    <div className="w-6 h-6 ml-auto border-2 border-gray-400 rounded-full" />
-                  </Button>
+                  {/* Dynamically render selected tasks */}
+                  {selectedTasks.map((taskName, index) => (
+                    <div key={taskName} className="relative group">
+                      <Button
+                        variant="outline"
+                        className={`w-full py-8 text-xl font-medium justify-start ${
+                          taskName === 'Wheels and tyres'
+                            ? 'bg-green-600/20 border-green-500/50 text-white hover:bg-green-600/30'
+                            : 'bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50'
+                        }`}
+                        onClick={() => {
+                          toast({
+                            title: `${taskName} Inspection`,
+                            description: `Opening ${taskName.toLowerCase()} inspection...`,
+                          });
+                        }}
+                      >
+                        {taskName}
+                        {taskName === 'Wheels and tyres' ? (
+                          <CheckCircle className="w-6 h-6 ml-auto text-green-400" />
+                        ) : (
+                          <div className="w-6 h-6 ml-auto border-2 border-gray-400 rounded-full" />
+                        )}
+                      </Button>
+                      
+                      {/* Remove button for non-default tasks */}
+                      {taskName !== 'Wheels and tyres' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 hover:bg-red-700 text-white p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => removeTask(taskName)}
+                        >
+                          ×
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {/* Empty state when only default task */}
+                  {selectedTasks.length === 1 && (
+                    <div className="text-center text-white/60 py-8">
+                      <p>Use "Add Task" to include additional inspection categories</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Bottom Right - Technician Name */}
