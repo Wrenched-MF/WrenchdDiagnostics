@@ -278,9 +278,12 @@ export default function WheelsInspection() {
         brand: lastTyreData.brand,
       }));
       
+      // Auto-advance to tread depth step
+      setCurrentStep('tread');
+      
       toast({
         title: "Data Copied",
-        description: "Specifications copied from previous tyre.",
+        description: "Specifications copied. Now measure tread depth.",
       });
     }
   };
