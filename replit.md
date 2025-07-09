@@ -4,7 +4,7 @@
 
 This is a full-stack web application for Wrench'd IVHC (Independent Vehicle Health Check), built with a modern React frontend and Express.js backend. The application provides professional vehicle inspection services optimized for tablet use by mechanics, featuring user authentication, subscription management, and comprehensive admin capabilities.
 
-**Current Status**: Complete job management system implemented with real DVLA API integration for vehicle registration lookup, UK postcode validation, comprehensive workflow tracking from vehicle lookup to customer data collection, and PWA capability with app icons for tablet installation. Authentication issues resolved - all API endpoints now work properly with session-based authentication.
+**Current Status**: Complete job management system with comprehensive pre-inspection and VHC workflows implemented. Features real DVLA API integration, UK postcode validation, photo capture with damage marking, and full VHC task selection system. All inspection categories available with dynamic task management. React compatibility issues resolved by removing Next.js "use client" directives from shadcn/ui components.
 
 ## User Preferences
 
