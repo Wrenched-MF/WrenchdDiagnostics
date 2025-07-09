@@ -14,6 +14,7 @@ import InspectionDashboard from "@/pages/inspection-dashboard";
 import JobCard from "@/pages/job-card";
 import PreInspection from "@/pages/pre-inspection";
 import VHC from "@/pages/vhc";
+import WheelsInspection from "@/pages/wheels-inspection";
 import NotFound from "@/pages/not-found";
 import { getQueryFn } from "./lib/queryClient";
 
@@ -59,6 +60,7 @@ function Router() {
             }}
           </Route>
           <Route path="/vhc/:jobId" component={VHC} />
+          <Route path="/wheels-inspection/:jobId" component={WheelsInspection} />
         </>
       ) : (
         <Route path="/" component={AuthPage} />
