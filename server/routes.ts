@@ -586,7 +586,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // VHC (Vehicle Health Check) API routes
   app.post('/api/vhc', isAuthenticated, async (req: any, res) => {
     try {
-      const { jobId, isOnRamp, hasTpms, tpmsType, currentStage, inspectionData } = req.body;
+      const { jobId, isOnRamp, hasTpms, tpmsType, currentStage, selectedTasks, completedTasks, inspectionData } = req.body;
 
       if (!jobId || isOnRamp === undefined || hasTpms === undefined) {
         return res.status(400).json({ message: 'Missing required fields' });
@@ -602,6 +602,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           hasTpms,
           tpmsType: hasTpms ? tpmsType : null,
           currentStage: currentStage || 'initial',
+          selectedTasks: selectedTasks || ['Wheels and tyres'],
+          completedTasks: completedTasks || [],
           inspectionData,
         });
         
@@ -614,6 +616,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           hasTpms,
           tpmsType: hasTpms ? tpmsType : null,
           currentStage: currentStage || 'initial',
+          selectedTasks: selectedTasks || ['Wheels and tyres'],
+          completedTasks: completedTasks || [],
           inspectionData,
         });
         
