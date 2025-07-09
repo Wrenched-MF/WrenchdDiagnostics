@@ -75,13 +75,6 @@ export default function PreInspection() {
     enabled: !!jobId,
   });
 
-  // Auto-start camera when component mounts and on photo step
-  useEffect(() => {
-    if (currentStep === 'photo' && !capturedPhoto) {
-      startCamera();
-    }
-  }, [currentStep, capturedPhoto, startCamera]);
-
   // Start camera for photo capture
   const startCamera = useCallback(async () => {
     try {
@@ -116,6 +109,13 @@ export default function PreInspection() {
       });
     }
   }, [toast]);
+
+  // Auto-start camera when component mounts and on photo step
+  useEffect(() => {
+    if (currentStep === 'photo' && !capturedPhoto) {
+      startCamera();
+    }
+  }, [currentStep, capturedPhoto, startCamera]);
 
   // Capture photo from camera
   const capturePhoto = useCallback(() => {
