@@ -71,7 +71,7 @@ interface Job {
 export default function CreateJob() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [, setLocation] = useLocation();
+  const [, navigate] = useLocation();
   const [currentStep, setCurrentStep] = useState<"vrm" | "vehicle-manual" | "customer" | "confirm">("vrm");
   const [vehicleData, setVehicleData] = useState<VehicleData | null>(null);
   const [isVrmLoading, setIsVrmLoading] = useState(false);
@@ -119,7 +119,7 @@ export default function CreateJob() {
         title: "Job Created",
         description: "Vehicle inspection job has been created successfully.",
       });
-      setLocation("/jobs");
+      navigate("/jobs");
     },
     onError: (error: Error) => {
       toast({
