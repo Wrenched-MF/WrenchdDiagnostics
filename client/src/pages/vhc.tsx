@@ -44,15 +44,17 @@ export default function VHC() {
   const [hasTpms, setHasTpms] = useState<boolean | null>(null);
   const [tpmsType, setTpmsType] = useState<'direct' | 'indirect' | null>(null);
 
-  // Sample inspection items for wheels and tyres
-  const [inspectionItems, setInspectionItems] = useState([
-    { name: "Tyre condition and tread depth", checked: false, status: null as 'pass' | 'fail' | 'advisory' | null },
-    { name: "Wheel condition", checked: false, status: null as 'pass' | 'fail' | 'advisory' | null },
-    { name: "Tyre pressure", checked: false, status: null as 'pass' | 'fail' | 'advisory' | null },
-    { name: "Wheel alignment", checked: false, status: null as 'pass' | 'fail' | 'advisory' | null },
-    { name: "Valve caps and stems", checked: false, status: null as 'pass' | 'fail' | 'advisory' | null },
-    { name: "Wheel bolts/nuts torque", checked: false, status: null as 'pass' | 'fail' | 'advisory' | null },
-  ]);
+  // VHC inspection categories
+  const inspectionCategories = [
+    { name: "Wheels and tyres", route: "/vhc-wheels", completed: false },
+    { name: "Brakes", route: "/vhc-brakes", completed: false },
+    { name: "Steering and suspension", route: "/vhc-steering", completed: false },
+    { name: "Lights and electrics", route: "/vhc-lights", completed: false },
+    { name: "Body and structure", route: "/vhc-body", completed: false },
+    { name: "Engine and drivetrain", route: "/vhc-engine", completed: false },
+    { name: "Exhaust and emissions", route: "/vhc-exhaust", completed: false },
+    { name: "Interior and controls", route: "/vhc-interior", completed: false },
+  ];
 
   // Fetch job data
   const { data: job } = useQuery<JobData>({
@@ -170,7 +172,7 @@ export default function VHC() {
       hasTpms,
       tpmsType: hasTpms ? tpmsType : undefined,
       currentStage: 'inspection' as const,
-      inspectionData: inspectionItems,
+      inspectionData: inspectionCategories,
     };
 
     saveVhcMutation.mutate(vhcData);
@@ -412,125 +414,64 @@ export default function VHC() {
             )}
 
             {currentStage === 'inspection' && (
-              <div className="space-y-0">
-                {/* Inspection Category Header */}
-                <div className="bg-green-600 text-white p-4 rounded-t-lg flex items-center justify-between">
-                  <h2 className="text-xl font-bold">Wheels and tyres</h2>
+              <div className="bg-blue-600 text-white min-h-[600px] relative rounded-lg overflow-hidden">
+                {/* Top Navigation */}
+                <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
                   <Button 
-                    size="sm" 
-                    className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                    variant="ghost" 
+                    size="sm"
+                    className="text-white hover:bg-white/20 p-2"
+                    onClick={() => navigate(`/jobs/${jobId}`)}
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
+                  <div className="text-white text-sm font-medium rotate-90 origin-center">
+                    Wheels and tyres
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="text-white hover:bg-white/20 p-2 border border-white/30"
                   >
                     Check
                   </Button>
                 </div>
 
-                {/* Inspection Items List */}
-                <div className="bg-white/5 rounded-b-lg">
-                  {inspectionItems.map((item, index) => (
-                    <div 
+                {/* Main Content Area */}
+                <div className="pt-20 pb-20 px-6 space-y-4">
+                  {inspectionCategories.map((category, index) => (
+                    <Button
                       key={index}
-                      className="border-b border-white/10 last:border-b-0 p-4"
+                      variant="outline"
+                      className="w-full bg-white/10 border-white/30 text-white hover:bg-white/20 py-6 text-lg font-medium justify-start"
+                      onClick={() => {
+                        toast({
+                          title: "Coming Soon",
+                          description: `${category.name} inspection will be available soon.`,
+                        });
+                      }}
                     >
-                      <div className="flex items-center justify-between">
-                        <div 
-                          className="flex items-center space-x-3 cursor-pointer"
-                          onClick={() => {
-                            const newItems = [...inspectionItems];
-                            newItems[index].checked = !newItems[index].checked;
-                            setInspectionItems(newItems);
-                          }}
-                        >
-                          <div className="w-6 h-6 rounded border-2 border-white/30 flex items-center justify-center">
-                            {item.checked && (
-                              <CheckCircle className="w-4 h-4 text-green-500" />
-                            )}
-                          </div>
-                          <span className="text-white text-sm">{item.name}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          {item.status && (
-                            <Badge 
-                              className={`text-xs ${
-                                item.status === 'pass' 
-                                  ? 'bg-green-600/20 text-green-400 border-green-500/30'
-                                  : item.status === 'fail'
-                                  ? 'bg-red-600/20 text-red-400 border-red-500/30'
-                                  : 'bg-yellow-600/20 text-yellow-400 border-yellow-500/30'
-                              }`}
-                            >
-                              {item.status.toUpperCase()}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Status Selection Buttons - Only show when item is checked */}
-                      {item.checked && (
-                        <div className="mt-3 flex space-x-2">
-                          <Button
-                            size="sm"
-                            variant={item.status === 'pass' ? 'default' : 'outline'}
-                            className={`text-xs ${
-                              item.status === 'pass' 
-                                ? 'bg-green-600 hover:bg-green-700 text-white' 
-                                : 'bg-white/10 border-green-500/30 text-green-400 hover:bg-green-600/20'
-                            }`}
-                            onClick={() => {
-                              const newItems = [...inspectionItems];
-                              newItems[index].status = item.status === 'pass' ? null : 'pass';
-                              setInspectionItems(newItems);
-                            }}
-                          >
-                            PASS
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={item.status === 'fail' ? 'default' : 'outline'}
-                            className={`text-xs ${
-                              item.status === 'fail' 
-                                ? 'bg-red-600 hover:bg-red-700 text-white' 
-                                : 'bg-white/10 border-red-500/30 text-red-400 hover:bg-red-600/20'
-                            }`}
-                            onClick={() => {
-                              const newItems = [...inspectionItems];
-                              newItems[index].status = item.status === 'fail' ? null : 'fail';
-                              setInspectionItems(newItems);
-                            }}
-                          >
-                            FAIL
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant={item.status === 'advisory' ? 'default' : 'outline'}
-                            className={`text-xs ${
-                              item.status === 'advisory' 
-                                ? 'bg-yellow-600 hover:bg-yellow-700 text-white' 
-                                : 'bg-white/10 border-yellow-500/30 text-yellow-400 hover:bg-yellow-600/20'
-                            }`}
-                            onClick={() => {
-                              const newItems = [...inspectionItems];
-                              newItems[index].status = item.status === 'advisory' ? null : 'advisory';
-                              setInspectionItems(newItems);
-                            }}
-                          >
-                            ADVISORY
-                          </Button>
-                        </div>
+                      {category.name}
+                      {category.completed && (
+                        <CheckCircle className="w-5 h-5 ml-auto text-green-400" />
                       )}
-                    </div>
+                    </Button>
                   ))}
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex justify-center space-x-4 pt-6">
+                {/* Bottom Navigation */}
+                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+                  <div className="text-white text-sm">
+                    Last Recheck
+                  </div>
                   <Button
                     variant="outline"
-                    className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                    className="bg-yellow-500 border-yellow-400 text-black hover:bg-yellow-400 px-6"
                   >
                     JOINT TEXT
                   </Button>
                   <Button
-                    className="bg-green-600 hover:bg-green-700 text-white"
+                    className="bg-green-600 hover:bg-green-700 text-white px-6"
                     onClick={handleInspectionSave}
                     disabled={saveVhcMutation.isPending}
                   >
@@ -539,7 +480,7 @@ export default function VHC() {
                     ) : (
                       <Save className="w-4 h-4 mr-2" />
                     )}
-                    Save Inspection
+                    Save
                   </Button>
                 </div>
               </div>
