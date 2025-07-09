@@ -5,6 +5,7 @@ import {
   customers,
   vehicleCustomers,
   jobs,
+  preInspections,
   inspectionReports,
   type User,
   type InsertUser,
@@ -18,6 +19,8 @@ import {
   type InsertVehicleCustomer,
   type Job,
   type InsertJob,
+  type PreInspection,
+  type InsertPreInspection,
   type InspectionReport,
   type InsertInspectionReport,
 } from "@shared/schema";
@@ -66,6 +69,11 @@ export interface IStorage {
   updateJobStatus(id: string, status: string): Promise<Job>;
   deleteJob(id: string): Promise<void>;
   
+  // Pre-inspection management
+  createPreInspection(preInspection: Omit<InsertPreInspection, 'id'>): Promise<PreInspection>;
+  getPreInspectionByJobId(jobId: string): Promise<PreInspection | undefined>;
+  updatePreInspection(id: string, data: Partial<PreInspection>): Promise<PreInspection>;
+
   // Inspection reports
   createInspectionReport(report: InsertInspectionReport): Promise<InspectionReport>;
   getInspectionReportsByUserId(userId: string): Promise<InspectionReport[]>;
@@ -347,6 +355,40 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(jobs)
       .where(eq(jobs.id, id));
+  }
+
+  // Pre-inspection management
+  async createPreInspection(preInspection: Omit<InsertPreInspection, 'id'>): Promise<PreInspection> {
+    const preInspectionId = `pre_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const [newPreInspection] = await db
+      .insert(preInspections)
+      .values({
+        ...preInspection,
+        id: preInspectionId,
+      })
+      .returning();
+    
+    return newPreInspection;
+  }
+
+  async getPreInspectionByJobId(jobId: string): Promise<PreInspection | undefined> {
+    const [preInspection] = await db
+      .select()
+      .from(preInspections)
+      .where(eq(preInspections.jobId, jobId));
+    
+    return preInspection;
+  }
+
+  async updatePreInspection(id: string, data: Partial<PreInspection>): Promise<PreInspection> {
+    const [updatedPreInspection] = await db
+      .update(preInspections)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(preInspections.id, id))
+      .returning();
+    
+    return updatedPreInspection;
   }
 
   // Inspection reports

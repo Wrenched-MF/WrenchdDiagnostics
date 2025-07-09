@@ -107,6 +107,18 @@ export const jobs = pgTable("jobs", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Pre-inspection reports
+export const preInspections = pgTable("pre_inspections", {
+  id: varchar("id").primaryKey().notNull(),
+  jobId: varchar("job_id").references(() => jobs.id).notNull(),
+  photoUrl: text("photo_url"), // Base64 image data or URL
+  damageMarkers: jsonb("damage_markers"), // Array of damage marker objects
+  mileage: integer("mileage"),
+  status: varchar("status").default("completed").notNull(), // 'photo', 'damage', 'mileage', 'completed'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Vehicle inspection reports
 export const inspectionReports = pgTable("inspection_reports", {
   id: varchar("id").primaryKey(),
@@ -142,6 +154,9 @@ export type VehicleCustomer = typeof vehicleCustomers.$inferSelect;
 
 export type InsertJob = typeof jobs.$inferInsert;
 export type Job = typeof jobs.$inferSelect;
+
+export type InsertPreInspection = typeof preInspections.$inferInsert;
+export type PreInspection = typeof preInspections.$inferSelect;
 
 export type InsertInspectionReport = typeof inspectionReports.$inferInsert;
 export type InspectionReport = typeof inspectionReports.$inferSelect;

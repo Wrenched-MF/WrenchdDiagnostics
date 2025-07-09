@@ -271,6 +271,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Pre-inspection endpoints
+  app.post('/api/pre-inspections', isAuthenticated, async (req: any, res) => {
+    try {
+      const { jobId, photoUrl, damageMarkers, mileage, status } = req.body;
+      
+      // Verify job exists and user owns it
+      const job = await storage.getJob(jobId);
+      if (!job) {
+        return res.status(404).json({ message: 'Job not found' });
+      }
+
+      if (job.userId !== req.user?.id) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+
+      // Check if pre-inspection already exists for this job
+      const existingPreInspection = await storage.getPreInspectionByJobId(jobId);
+      if (existingPreInspection) {
+        // Update existing pre-inspection
+        const updatedPreInspection = await storage.updatePreInspection(existingPreInspection.id, {
+          photoUrl,
+          damageMarkers,
+          mileage,
+          status,
+        });
+        res.json(updatedPreInspection);
+      } else {
+        // Create new pre-inspection
+        const preInspection = await storage.createPreInspection({
+          jobId,
+          photoUrl,
+          damageMarkers,
+          mileage,
+          status,
+        });
+        res.json(preInspection);
+      }
+    } catch (error) {
+      console.error('Error saving pre-inspection:', error);
+      res.status(500).json({ message: 'Failed to save pre-inspection' });
+    }
+  });
+
+  app.get('/api/pre-inspections/:jobId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { jobId } = req.params;
+      
+      // Verify job exists and user owns it
+      const job = await storage.getJob(jobId);
+      if (!job) {
+        return res.status(404).json({ message: 'Job not found' });
+      }
+
+      if (job.userId !== req.user?.id) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+
+      const preInspection = await storage.getPreInspectionByJobId(jobId);
+      if (!preInspection) {
+        return res.status(404).json({ message: 'Pre-inspection not found' });
+      }
+
+      res.json(preInspection);
+    } catch (error) {
+      console.error('Error fetching pre-inspection:', error);
+      res.status(500).json({ message: 'Failed to fetch pre-inspection' });
+    }
+  });
+
   // Vehicle registry endpoints
   app.get('/api/vehicles', isAuthenticated, async (req: any, res) => {
     try {
