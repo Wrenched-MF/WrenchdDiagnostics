@@ -501,7 +501,7 @@ export default function PreInspection() {
                   <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
                 ) : currentStep === 'mileage' ? (
                   <Save className="w-4 h-4 mr-2" />
-                )}
+                ) : null}
                 {currentStep === 'mileage' ? 'Complete Pre-Inspection' : 'Next'}
               </Button>
             </div>
