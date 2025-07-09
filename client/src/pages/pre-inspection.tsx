@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Camera, Save, MapPin, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import carDiagramSrc from "@assets/car-line-draw-insurance-rent-260nw-309121715_1752020115451.jpg";
+import carDiagramSrc from "@assets/Damage Markers_1752021507027.jpg";
 
 interface PreInspectionData {
   id: string;
