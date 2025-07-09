@@ -15,6 +15,12 @@ import JobCard from "@/pages/job-card";
 import PreInspection from "@/pages/pre-inspection";
 import VHC from "@/pages/vhc";
 import WheelsInspection from "@/pages/wheels-inspection";
+import BrakeInspection from "@/pages/brake-inspection";
+import ExhaustInspection from "@/pages/exhaust-inspection";
+import AirConditioningInspection from "@/pages/air-conditioning-inspection";
+import SummerChecks from "@/pages/summer-checks";
+import WinterChecks from "@/pages/winter-checks";
+import ServiceInspection from "@/pages/service-inspection";
 import NotFound from "@/pages/not-found";
 import { getQueryFn } from "./lib/queryClient";
 
@@ -61,6 +67,12 @@ function Router() {
           </Route>
           <Route path="/vhc/:jobId" component={VHC} />
           <Route path="/wheels-inspection/:jobId" component={WheelsInspection} />
+          <Route path="/brake-inspection/:jobId" component={BrakeInspection} />
+          <Route path="/exhaust-inspection/:jobId" component={ExhaustInspection} />
+          <Route path="/air-conditioning-inspection/:jobId" component={AirConditioningInspection} />
+          <Route path="/summer-checks/:jobId" component={SummerChecks} />
+          <Route path="/winter-checks/:jobId" component={WinterChecks} />
+          <Route path="/service-inspection/:jobId" component={ServiceInspection} />
         </>
       ) : (
         <Route path="/" component={AuthPage} />

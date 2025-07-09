@@ -4,7 +4,7 @@
 
 This is a full-stack web application for Wrench'd IVHC (Independent Vehicle Health Check), built with a modern React frontend and Express.js backend. The application provides professional vehicle inspection services optimized for tablet use by mechanics, featuring user authentication, subscription management, and comprehensive admin capabilities.
 
-**Current Status**: Complete job management system implemented with real DVLA API integration for vehicle registration lookup, UK postcode validation, comprehensive workflow tracking from vehicle lookup to customer data collection, and PWA capability with app icons for tablet installation. Authentication issues resolved - all API endpoints now work properly with session-based authentication. VHC inspection system fully implemented with 6 inspection categories: wheels/tyres, brake inspection, exhaust inspection, air conditioning, summer checks, and winter checks.
+**Current Status**: Complete job management system implemented with real DVLA API integration for vehicle registration lookup, UK postcode validation, comprehensive workflow tracking from vehicle lookup to customer data collection, and PWA capability with app icons for tablet installation. Authentication issues resolved - all API endpoints now work properly with session-based authentication. VHC inspection system fully implemented with 7 comprehensive inspection categories: wheels/tyres, brake inspection, exhaust inspection, air conditioning, summer checks, winter checks, and service inspection. Each inspection page includes real automotive data collection with automatic condition assessment (pass/advisory/fail) and detailed technical forms optimized for tablet use.
 
 ## User Preferences
 

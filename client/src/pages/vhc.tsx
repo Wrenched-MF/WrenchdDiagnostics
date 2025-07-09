@@ -58,7 +58,8 @@ export default function VHC() {
     'Exhaust inspection',
     'Air conditioning',
     'Summer checks',
-    'Winter checks'
+    'Winter checks',
+    'Service inspection'
   ];
 
   // Add task to selected list
@@ -498,13 +499,33 @@ export default function VHC() {
                             : 'bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50'
                         }`}
                         onClick={() => {
-                          if (taskName === 'Wheels and tyres') {
-                            navigate(`/wheels-inspection/${jobId}`);
-                          } else {
-                            toast({
-                              title: `${taskName} Inspection`,
-                              description: `Opening ${taskName.toLowerCase()} inspection...`,
-                            });
+                          switch (taskName) {
+                            case 'Wheels and tyres':
+                              navigate(`/wheels-inspection/${jobId}`);
+                              break;
+                            case 'Brake inspection':
+                              navigate(`/brake-inspection/${jobId}`);
+                              break;
+                            case 'Exhaust inspection':
+                              navigate(`/exhaust-inspection/${jobId}`);
+                              break;
+                            case 'Air conditioning':
+                              navigate(`/air-conditioning-inspection/${jobId}`);
+                              break;
+                            case 'Summer checks':
+                              navigate(`/summer-checks/${jobId}`);
+                              break;
+                            case 'Winter checks':
+                              navigate(`/winter-checks/${jobId}`);
+                              break;
+                            case 'Service inspection':
+                              navigate(`/service-inspection/${jobId}`);
+                              break;
+                            default:
+                              toast({
+                                title: `${taskName} Inspection`,
+                                description: `Opening ${taskName.toLowerCase()} inspection...`,
+                              });
                           }
                         }}
                       >
