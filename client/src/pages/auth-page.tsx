@@ -55,6 +55,8 @@ export default function AuthPage() {
     },
     onSuccess: (user: any) => {
       queryClient.setQueryData(["/api/user"], user);
+      // Invalidate all queries to refetch with authenticated session
+      queryClient.invalidateQueries();
       setLocation("/");
     },
     onError: (error: Error) => {
