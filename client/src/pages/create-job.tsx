@@ -760,7 +760,7 @@ export default function CreateJob() {
                                 job.status === 'completed' ? 'text-green-400' :
                                 'text-red-400'
                               }`}>
-                                {job.status.replace('_', ' ')}
+                                {job.status ? job.status.replace('_', ' ') : 'Unknown'}
                               </span>
                             </div>
                           </div>
