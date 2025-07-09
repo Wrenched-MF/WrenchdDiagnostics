@@ -152,7 +152,9 @@ export default function JobCard() {
     );
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | null | undefined) => {
+    if (!status) return 'bg-gray-600';
+    
     switch (status) {
       case 'created': return 'bg-blue-600';
       case 'in_progress': return 'bg-yellow-600';
@@ -193,7 +195,7 @@ export default function JobCard() {
               </div>
             </div>
             <Badge className={`${getStatusColor(job.status)} text-white`}>
-              {job.status.replace('_', ' ').toUpperCase()}
+              {job.status ? job.status.replace('_', ' ').toUpperCase() : 'UNKNOWN'}
             </Badge>
           </div>
         </div>

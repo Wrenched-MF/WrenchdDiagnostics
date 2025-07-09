@@ -26,7 +26,9 @@ interface DashboardStats {
   pendingJobs: number;
 }
 
-const getStatusColor = (status: string) => {
+const getStatusColor = (status: string | null | undefined) => {
+  if (!status) return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+  
   switch (status) {
     case "completed":
       return "bg-green-500/20 text-green-400 border-green-500/30";
@@ -41,7 +43,9 @@ const getStatusColor = (status: string) => {
   }
 };
 
-const getStatusIcon = (status: string) => {
+const getStatusIcon = (status: string | null | undefined) => {
+  if (!status) return <Car className="w-4 h-4" />;
+  
   switch (status) {
     case "completed":
       return <CheckCircle className="w-4 h-4" />;
@@ -228,7 +232,7 @@ export default function InspectionDashboard() {
                     <div className="flex items-center space-x-2">
                       <Badge className={getStatusColor(job.status)}>
                         {getStatusIcon(job.status)}
-                        <span className="ml-1 capitalize">{job.status.replace('_', ' ')}</span>
+                        <span className="ml-1 capitalize">{job.status ? job.status.replace('_', ' ') : 'unknown'}</span>
                       </Badge>
                     </div>
                   </div>
@@ -364,7 +368,7 @@ export default function InspectionDashboard() {
                       </div>
                       <Badge className={getStatusColor(job.status)}>
                         {getStatusIcon(job.status)}
-                        <span className="ml-1 capitalize">{job.status.replace('_', ' ')}</span>
+                        <span className="ml-1 capitalize">{job.status ? job.status.replace('_', ' ') : 'unknown'}</span>
                       </Badge>
                     </div>
                   </div>
