@@ -2,7 +2,7 @@ import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
+// import { TooltipProvider } from "@/components/ui/tooltip";
 import { useState, useEffect } from "react";
 import LoadingPage from "@/pages/loading";
 import HomePage from "@/pages/home";
@@ -13,7 +13,7 @@ import CreateJob from "@/pages/create-job";
 import InspectionDashboard from "@/pages/inspection-dashboard";
 import JobCard from "@/pages/job-card";
 import PreInspection from "@/pages/pre-inspection";
-import VHC from "@/pages/vhc";
+import TestVHC from "@/pages/test-vhc";
 import NotFound from "@/pages/not-found";
 import { getQueryFn } from "./lib/queryClient";
 
@@ -58,7 +58,7 @@ function Router() {
               return <PreInspection />;
             }}
           </Route>
-          <Route path="/vhc/:jobId" component={VHC} />
+          <Route path="/vhc/:jobId" component={TestVHC} />
         </>
       ) : (
         <Route path="/" component={AuthPage} />
@@ -71,10 +71,8 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <Toaster />
+      <Router />
     </QueryClientProvider>
   );
 }
