@@ -360,9 +360,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteJob(id: string): Promise<void> {
-    await db
-      .delete(jobs)
-      .where(eq(jobs.id, id));
+    // Delete related data first to avoid foreign key constraint violations
+    await db.delete(vhcData).where(eq(vhcData.jobId, id));
+    await db.delete(preInspections).where(eq(preInspections.jobId, id));
+    await db.delete(jobs).where(eq(jobs.id, id));
   }
 
   // Pre-inspection management
