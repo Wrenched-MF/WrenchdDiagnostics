@@ -246,6 +246,45 @@ export default function VHC() {
     return true;
   };
 
+  // Check if all tasks are completed
+  const allTasksCompleted = () => {
+    return selectedTasks.length > 0 && selectedTasks.every(task => completedTasks.includes(task));
+  };
+
+  // Complete VHC and return to job card
+  const completeVhc = async () => {
+    try {
+      // Update VHC status to completed
+      const vhcData = {
+        isOnRamp,
+        hasTpms,
+        tpmsType: hasTpms ? tpmsType : undefined,
+        currentStage: 'completed' as const,
+        inspectionData: inspectionCategories,
+      };
+
+      await saveVhcMutation.mutateAsync(vhcData);
+      
+      // Update job status to completed
+      await apiRequest('PATCH', `/api/jobs/${jobId}/status`, {
+        status: 'completed'
+      });
+
+      toast({
+        title: "VHC Completed",
+        description: "Vehicle Health Check has been completed successfully.",
+      });
+      
+      navigate(`/jobs/${jobId}`);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to complete VHC. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!job) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
@@ -584,8 +623,26 @@ export default function VHC() {
                     </div>
                   ))}
                   
+                  {/* Complete VHC button - appears when all tasks are completed */}
+                  {allTasksCompleted() && (
+                    <div className="text-center py-8">
+                      <div className="bg-green-600/20 border border-green-500/30 rounded-lg p-6 mb-4">
+                        <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
+                        <h3 className="text-xl font-bold text-white mb-2">All Inspections Complete!</h3>
+                        <p className="text-gray-300 mb-4">All selected tasks have been completed successfully.</p>
+                        <Button
+                          onClick={completeVhc}
+                          disabled={saveVhcMutation.isPending}
+                          className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3 text-lg"
+                        >
+                          {saveVhcMutation.isPending ? 'Completing...' : 'Complete VHC'}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Empty state when only default task */}
-                  {selectedTasks.length === 1 && (
+                  {selectedTasks.length === 1 && !allTasksCompleted() && (
                     <div className="text-center text-white/60 py-8">
                       <p>Use "Add Task" to include additional inspection categories</p>
                     </div>
