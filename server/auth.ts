@@ -116,6 +116,7 @@ export function setupAuth(app: Express) {
 
   app.post("/api/login", passport.authenticate("local"), (req, res) => {
     const user = req.user!;
+    console.log('Login successful for user:', { id: user.id, username: user.username });
     res.status(200).json({
       id: user.id,
       username: user.username,
@@ -154,6 +155,13 @@ export function setupAuth(app: Express) {
 }
 
 export function isAuthenticated(req: any, res: any, next: any) {
+  console.log('Auth middleware check:', {
+    isAuthenticated: req.isAuthenticated(),
+    hasSession: !!req.session,
+    sessionID: req.sessionID,
+    user: req.user ? { id: req.user.id, username: req.user.username } : null
+  });
+  
   if (req.isAuthenticated()) {
     return next();
   }
