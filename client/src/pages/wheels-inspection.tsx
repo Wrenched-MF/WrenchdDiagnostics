@@ -364,7 +364,36 @@ export default function WheelsInspection() {
                     <h3 className="text-xl font-bold text-white mb-2">All Tyres Completed!</h3>
                     <p className="text-gray-300 mb-4">Wheels and tyres inspection is complete.</p>
                     <Button
-                      onClick={() => navigate(`/vhc/${jobId}`)}
+                      onClick={async () => {
+                        // Mark task as completed in VHC
+                        try {
+                          const vhcResponse = await fetch(`/api/vhc/${jobId}`, {
+                            credentials: 'include'
+                          });
+                          
+                          if (vhcResponse.ok) {
+                            const vhcData = await vhcResponse.json();
+                            const completedTasks = vhcData.completedTasks || [];
+                            
+                            if (!completedTasks.includes('Wheels and tyres')) {
+                              const updatedCompleted = [...completedTasks, 'Wheels and tyres'];
+                              
+                              await apiRequest('POST', '/api/vhc', {
+                                jobId,
+                                isOnRamp: vhcData.isOnRamp,
+                                hasTpms: vhcData.hasTpms,
+                                tpmsType: vhcData.tpmsType,
+                                currentStage: vhcData.currentStage,
+                                selectedTasks: vhcData.selectedTasks,
+                                completedTasks: updatedCompleted,
+                              });
+                            }
+                          }
+                        } catch (error) {
+                          console.error('Error updating VHC completion status:', error);
+                        }
+                        navigate(`/vhc/${jobId}`);
+                      }}
                       className="bg-green-600 hover:bg-green-700 text-white"
                     >
                       Return to VHC
