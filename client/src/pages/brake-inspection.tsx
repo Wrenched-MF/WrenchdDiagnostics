@@ -128,20 +128,16 @@ export default function BrakeInspection() {
   // Mark task as completed in VHC
   const markVhcTaskCompleted = async (taskName: string) => {
     try {
-      console.log('Marking task as completed:', taskName);
       const vhcResponse = await fetch(`/api/vhc/${jobId}`, {
         credentials: 'include'
       });
       
       if (vhcResponse.ok) {
         const vhcData = await vhcResponse.json();
-        console.log('Current VHC data:', vhcData);
         const completedTasks = vhcData.completedTasks || [];
-        console.log('Current completed tasks:', completedTasks);
         
         if (!completedTasks.includes(taskName)) {
           const updatedCompleted = [...completedTasks, taskName];
-          console.log('Updating completed tasks to:', updatedCompleted);
           
           await apiRequest('POST', '/api/vhc', {
             jobId,
@@ -152,12 +148,7 @@ export default function BrakeInspection() {
             selectedTasks: vhcData.selectedTasks,
             completedTasks: updatedCompleted,
           });
-          console.log('Task completion update sent successfully');
-        } else {
-          console.log('Task already completed:', taskName);
         }
-      } else {
-        console.error('Failed to fetch VHC data:', vhcResponse.status);
       }
     } catch (error) {
       console.error('Error updating VHC completion status:', error);
