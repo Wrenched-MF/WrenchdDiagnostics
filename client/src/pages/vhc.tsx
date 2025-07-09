@@ -453,11 +453,80 @@ export default function VHC() {
                     <CheckCircle className="w-6 h-6 ml-auto text-green-400" />
                   </Button>
 
-                  {/* Other inspection categories - will be added later */}
-                  <div className="text-center text-white/60 py-8">
-                    <p>Additional inspection tasks will appear here</p>
-                    <p className="text-sm mt-2">Use "Add Task" to include more inspection categories</p>
-                  </div>
+                  {/* Brake Inspection */}
+                  <Button
+                    variant="outline"
+                    className="w-full bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50 py-8 text-xl font-medium justify-start"
+                    onClick={() => {
+                      toast({
+                        title: "Brake Inspection",
+                        description: "Opening brake system inspection...",
+                      });
+                    }}
+                  >
+                    Brake inspection
+                    <div className="w-6 h-6 ml-auto border-2 border-gray-400 rounded-full" />
+                  </Button>
+
+                  {/* Exhaust Inspection */}
+                  <Button
+                    variant="outline"
+                    className="w-full bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50 py-8 text-xl font-medium justify-start"
+                    onClick={() => {
+                      toast({
+                        title: "Exhaust Inspection",
+                        description: "Opening exhaust system inspection...",
+                      });
+                    }}
+                  >
+                    Exhaust inspection
+                    <div className="w-6 h-6 ml-auto border-2 border-gray-400 rounded-full" />
+                  </Button>
+
+                  {/* Air Conditioning */}
+                  <Button
+                    variant="outline"
+                    className="w-full bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50 py-8 text-xl font-medium justify-start"
+                    onClick={() => {
+                      toast({
+                        title: "Air Conditioning",
+                        description: "Opening air conditioning inspection...",
+                      });
+                    }}
+                  >
+                    Air conditioning
+                    <div className="w-6 h-6 ml-auto border-2 border-gray-400 rounded-full" />
+                  </Button>
+
+                  {/* Summer Checks */}
+                  <Button
+                    variant="outline"
+                    className="w-full bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50 py-8 text-xl font-medium justify-start"
+                    onClick={() => {
+                      toast({
+                        title: "Summer Checks",
+                        description: "Opening summer inspection checklist...",
+                      });
+                    }}
+                  >
+                    Summer checks
+                    <div className="w-6 h-6 ml-auto border-2 border-gray-400 rounded-full" />
+                  </Button>
+
+                  {/* Winter Checks */}
+                  <Button
+                    variant="outline"
+                    className="w-full bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50 py-8 text-xl font-medium justify-start"
+                    onClick={() => {
+                      toast({
+                        title: "Winter Checks",
+                        description: "Opening winter inspection checklist...",
+                      });
+                    }}
+                  >
+                    Winter checks
+                    <div className="w-6 h-6 ml-auto border-2 border-gray-400 rounded-full" />
+                  </Button>
                 </div>
 
                 {/* Bottom Right - Technician Name */}
