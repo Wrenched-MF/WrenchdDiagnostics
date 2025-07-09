@@ -51,7 +51,12 @@ function Router() {
           <Route path="/settings" component={UserSettings} />
           <Route path="/create-job" component={CreateJob} />
           <Route path="/jobs/:id" component={JobCard} />
-          <Route path="/pre-inspection/:jobId" component={PreInspection} />
+          <Route path="/pre-inspection/:jobId">
+            {(params) => {
+              console.log('Pre-inspection route matched with params:', params);
+              return <PreInspection />;
+            }}
+          </Route>
         </>
       ) : (
         <Route path="/" component={AuthPage} />
