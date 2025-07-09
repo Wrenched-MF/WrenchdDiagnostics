@@ -46,6 +46,9 @@ export default function PreInspection() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   
+  // Debug logging
+  console.log('PreInspection component loaded', { jobId });
+  
   const [currentStep, setCurrentStep] = useState<'photo' | 'damage' | 'mileage'>('photo');
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [damageMarkers, setDamageMarkers] = useState<DamageMarker[]>([]);
