@@ -498,10 +498,14 @@ export default function VHC() {
                             : 'bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50'
                         }`}
                         onClick={() => {
-                          toast({
-                            title: `${taskName} Inspection`,
-                            description: `Opening ${taskName.toLowerCase()} inspection...`,
-                          });
+                          if (taskName === 'Wheels and tyres') {
+                            navigate(`/wheels-inspection/${jobId}`);
+                          } else {
+                            toast({
+                              title: `${taskName} Inspection`,
+                              description: `Opening ${taskName.toLowerCase()} inspection...`,
+                            });
+                          }
                         }}
                       >
                         {taskName}
