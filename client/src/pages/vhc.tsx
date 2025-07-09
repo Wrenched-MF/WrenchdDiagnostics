@@ -22,6 +22,8 @@ interface VHCData {
   hasTpms: boolean;
   tpmsType?: 'direct' | 'indirect';
   currentStage: 'initial' | 'inspection';
+  selectedTasks: string[];
+  completedTasks: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -50,6 +52,7 @@ export default function VHC() {
   const [hasTpms, setHasTpms] = useState<boolean | null>(null);
   const [tpmsType, setTpmsType] = useState<'direct' | 'indirect' | null>(null);
   const [selectedTasks, setSelectedTasks] = useState<string[]>(['Wheels and tyres']); // Default task
+  const [completedTasks, setCompletedTasks] = useState<string[]>([]); // Completed tasks
 
   // Available inspection tasks
   const availableTasks = [
@@ -77,9 +80,35 @@ export default function VHC() {
   const removeTask = (taskName: string) => {
     if (taskName !== 'Wheels and tyres') { // Don't allow removing default task
       setSelectedTasks(selectedTasks.filter(task => task !== taskName));
+      setCompletedTasks(completedTasks.filter(task => task !== taskName)); // Also remove from completed if present
       toast({
         title: "Task Removed",
         description: `${taskName} has been removed from the inspection checklist.`,
+      });
+    }
+  };
+
+  // Mark task as completed
+  const markTaskCompleted = (taskName: string) => {
+    if (!completedTasks.includes(taskName)) {
+      const updatedCompleted = [...completedTasks, taskName];
+      setCompletedTasks(updatedCompleted);
+      
+      // Save to database immediately
+      const vhcData = {
+        isOnRamp,
+        hasTpms,
+        tpmsType: hasTpms ? tpmsType : undefined,
+        currentStage: 'inspection' as const,
+        selectedTasks,
+        completedTasks: updatedCompleted,
+      };
+      
+      saveVhcMutation.mutate(vhcData);
+      
+      toast({
+        title: "Task Completed",
+        description: `${taskName} has been marked as completed.`,
       });
     }
   };
@@ -118,6 +147,8 @@ export default function VHC() {
       setHasTpms(existingVhc.hasTpms);
       setTpmsType(existingVhc.tpmsType || null);
       setCurrentStage(existingVhc.currentStage);
+      setSelectedTasks(existingVhc.selectedTasks || ['Wheels and tyres']);
+      setCompletedTasks(existingVhc.completedTasks || []);
     }
   }, [existingVhc]);
 
@@ -126,6 +157,8 @@ export default function VHC() {
     mutationFn: async (data: Partial<VHCData>) => {
       const response = await apiRequest('POST', '/api/vhc', {
         jobId,
+        selectedTasks,
+        completedTasks,
         ...data
       });
       return response.json();
@@ -494,7 +527,7 @@ export default function VHC() {
                       <Button
                         variant="outline"
                         className={`w-full py-8 text-xl font-medium justify-start ${
-                          taskName === 'Wheels and tyres'
+                          completedTasks.includes(taskName)
                             ? 'bg-green-600/20 border-green-500/50 text-white hover:bg-green-600/30'
                             : 'bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50'
                         }`}
@@ -530,7 +563,7 @@ export default function VHC() {
                         }}
                       >
                         {taskName}
-                        {taskName === 'Wheels and tyres' ? (
+                        {completedTasks.includes(taskName) ? (
                           <CheckCircle className="w-6 h-6 ml-auto text-green-400" />
                         ) : (
                           <div className="w-6 h-6 ml-auto border-2 border-gray-400 rounded-full" />

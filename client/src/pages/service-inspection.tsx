@@ -223,9 +223,45 @@ export default function ServiceInspection() {
     }
   }, [serviceData.serviceDetails, serviceData.engineService, serviceData.fluidChecks, serviceData.beltsAndHoses, serviceData.suspension]);
 
+  // Mark task as completed in VHC
+  const markVhcTaskCompleted = async (taskName: string) => {
+    try {
+      // Fetch current VHC data to get completed tasks
+      const vhcResponse = await fetch(`/api/vhc/${jobId}`, {
+        credentials: 'include'
+      });
+      
+      if (vhcResponse.ok) {
+        const vhcData = await vhcResponse.json();
+        const completedTasks = vhcData.completedTasks || [];
+        
+        if (!completedTasks.includes(taskName)) {
+          const updatedCompleted = [...completedTasks, taskName];
+          
+          // Update VHC data with completed task
+          await apiRequest('POST', '/api/vhc', {
+            jobId,
+            isOnRamp: vhcData.isOnRamp,
+            hasTpms: vhcData.hasTpms,
+            tpmsType: vhcData.tpmsType,
+            currentStage: vhcData.currentStage,
+            selectedTasks: vhcData.selectedTasks,
+            completedTasks: updatedCompleted,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error updating VHC completion status:', error);
+    }
+  };
+
   // Save inspection
-  const saveInspection = () => {
+  const saveInspection = async () => {
     setServiceData(prev => ({ ...prev, status: 'completed' }));
+    
+    // Mark the task as completed in VHC
+    await markVhcTaskCompleted('Service inspection');
+    
     toast({
       title: "Service Inspection Complete",
       description: `Overall condition: ${serviceData.overallCondition?.toUpperCase()}`,

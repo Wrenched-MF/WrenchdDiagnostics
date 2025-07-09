@@ -127,6 +127,8 @@ export const vhcData = pgTable("vhc_data", {
   hasTpms: boolean("has_tpms").notNull(),
   tpmsType: varchar("tpms_type"), // 'direct' or 'indirect' (only if hasTpms is true)
   currentStage: varchar("current_stage").default("initial").notNull(), // 'initial', 'inspection'
+  selectedTasks: jsonb("selected_tasks").default('["Wheels and tyres"]'), // Array of selected task names
+  completedTasks: jsonb("completed_tasks").default('[]'), // Array of completed task names
   inspectionData: jsonb("inspection_data"), // Store all inspection checklist results
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
