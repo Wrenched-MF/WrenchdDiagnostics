@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Camera, Copy, Save, CheckCircle } from "lucide-react";
+import { ArrowLeft, Camera, Copy, Save, CheckCircle, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 
@@ -35,8 +35,11 @@ interface TyreData {
   middleTread: number;
   outerTread: number;
   dotCode: string;
+  dotWeek?: string;
+  dotYear?: string;
   photoRequired: boolean;
   photoUrl?: string;
+  photoFile?: File;
   completed: boolean;
   spareType?: 'no_accessible' | 'spare_tyre' | 'run_flat' | 'inflation_kit' | 'space_saver';
 }
@@ -54,6 +57,7 @@ export default function WheelsInspection() {
   const { jobId } = useParams();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [currentStep, setCurrentStep] = useState<'position' | 'spare_type' | 'specs' | 'tread' | 'photo'>('position');
   const [selectedPosition, setSelectedPosition] = useState<string>('');
@@ -192,8 +196,28 @@ export default function WheelsInspection() {
     }
   };
 
+  // Handle photo capture
+  const handlePhotoCapture = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setCurrentTyre(prev => ({
+          ...prev,
+          photoFile: file,
+          photoUrl: e.target?.result as string,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Save tyre data
   const saveTyreData = () => {
+    const dotCode = currentTyre.dotWeek && currentTyre.dotYear 
+      ? `${currentTyre.dotWeek}${currentTyre.dotYear}` 
+      : '';
+
     const newTyre: TyreData = {
       position: currentTyre.position || '',
       width: currentTyre.width || '',
@@ -205,10 +229,14 @@ export default function WheelsInspection() {
       innerTread: currentTyre.innerTread || 0,
       middleTread: currentTyre.middleTread || 0,
       outerTread: currentTyre.outerTread || 0,
-      dotCode: currentTyre.dotCode || '',
+      dotCode: dotCode,
+      dotWeek: currentTyre.dotWeek,
+      dotYear: currentTyre.dotYear,
       photoRequired: currentTyre.photoRequired || false,
       photoUrl: currentTyre.photoUrl,
+      photoFile: currentTyre.photoFile,
       completed: true,
+      spareType: currentTyre.spareType,
     };
 
     // Update all tyres array
@@ -595,68 +623,121 @@ export default function WheelsInspection() {
             {/* Tread Depth Measurement */}
             {currentStep === 'tread' && (
               <div className="space-y-6">
-                <div className="grid grid-cols-3 gap-4">
-                  {/* Inner Tread */}
-                  <div>
-                    <Label className="text-white">Inner Tread (mm)</Label>
-                    <Select value={currentTyre.innerTread?.toString() || ''} onValueChange={(value) => setCurrentTyre(prev => ({ ...prev, innerTread: parseFloat(value) }))}>
-                      <SelectTrigger className={`bg-gray-700 border-gray-600 text-white ${currentTyre.innerTread !== undefined ? getTreadColor(currentTyre.innerTread) : ''}`}>
-                        <SelectValue placeholder="Select depth" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-700">
-                        {treadDepths.map(depth => (
-                          <SelectItem key={depth} value={depth.toString()} className={`hover:bg-gray-700 ${getTreadColor(depth)}`}>
-                            {depth}mm
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {/* Inner Tread */}
+                <div>
+                  <Label className="text-white text-lg font-medium block mb-3">Inner Tread</Label>
+                  <div className="grid grid-cols-6 gap-2">
+                    {treadDepths.map(depth => (
+                      <Button
+                        key={depth}
+                        variant={currentTyre.innerTread === depth ? "default" : "outline"}
+                        className={`h-12 text-sm font-medium ${
+                          currentTyre.innerTread === depth 
+                            ? 'bg-green-600 border-green-500 text-white' 
+                            : `bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50 ${getTreadColor(depth)}`
+                        }`}
+                        onClick={() => setCurrentTyre(prev => ({ ...prev, innerTread: depth }))}
+                      >
+                        {depth}
+                      </Button>
+                    ))}
                   </div>
+                </div>
 
-                  {/* Middle Tread */}
-                  <div>
-                    <Label className="text-white">Middle Tread (mm)</Label>
-                    <Select value={currentTyre.middleTread?.toString() || ''} onValueChange={(value) => setCurrentTyre(prev => ({ ...prev, middleTread: parseFloat(value) }))}>
-                      <SelectTrigger className={`bg-gray-700 border-gray-600 text-white ${currentTyre.middleTread !== undefined ? getTreadColor(currentTyre.middleTread) : ''}`}>
-                        <SelectValue placeholder="Select depth" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-700">
-                        {treadDepths.map(depth => (
-                          <SelectItem key={depth} value={depth.toString()} className={`hover:bg-gray-700 ${getTreadColor(depth)}`}>
-                            {depth}mm
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {/* Middle Tread */}
+                <div>
+                  <Label className="text-white text-lg font-medium block mb-3">Middle Tread</Label>
+                  <div className="grid grid-cols-6 gap-2">
+                    {treadDepths.map(depth => (
+                      <Button
+                        key={depth}
+                        variant={currentTyre.middleTread === depth ? "default" : "outline"}
+                        className={`h-12 text-sm font-medium ${
+                          currentTyre.middleTread === depth 
+                            ? 'bg-green-600 border-green-500 text-white' 
+                            : `bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50 ${getTreadColor(depth)}`
+                        }`}
+                        onClick={() => setCurrentTyre(prev => ({ ...prev, middleTread: depth }))}
+                      >
+                        {depth}
+                      </Button>
+                    ))}
                   </div>
+                </div>
 
-                  {/* Outer Tread */}
-                  <div>
-                    <Label className="text-white">Outer Tread (mm)</Label>
-                    <Select value={currentTyre.outerTread?.toString() || ''} onValueChange={(value) => setCurrentTyre(prev => ({ ...prev, outerTread: parseFloat(value) }))}>
-                      <SelectTrigger className={`bg-gray-700 border-gray-600 text-white ${currentTyre.outerTread !== undefined ? getTreadColor(currentTyre.outerTread) : ''}`}>
-                        <SelectValue placeholder="Select depth" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-700">
-                        {treadDepths.map(depth => (
-                          <SelectItem key={depth} value={depth.toString()} className={`hover:bg-gray-700 ${getTreadColor(depth)}`}>
-                            {depth}mm
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {/* Outer Tread */}
+                <div>
+                  <Label className="text-white text-lg font-medium block mb-3">Outer Tread</Label>
+                  <div className="grid grid-cols-6 gap-2">
+                    {treadDepths.map(depth => (
+                      <Button
+                        key={depth}
+                        variant={currentTyre.outerTread === depth ? "default" : "outline"}
+                        className={`h-12 text-sm font-medium ${
+                          currentTyre.outerTread === depth 
+                            ? 'bg-green-600 border-green-500 text-white' 
+                            : `bg-gray-700/30 border-gray-500/50 text-white hover:bg-green-600/30 hover:border-green-500/50 ${getTreadColor(depth)}`
+                        }`}
+                        onClick={() => setCurrentTyre(prev => ({ ...prev, outerTread: depth }))}
+                      >
+                        {depth}
+                      </Button>
+                    ))}
                   </div>
                 </div>
 
                 {/* DOT Code */}
                 <div>
-                  <Label className="text-white">DOT Code (Optional)</Label>
-                  <Input
-                    value={currentTyre.dotCode || ''}
-                    onChange={(e) => setCurrentTyre(prev => ({ ...prev, dotCode: e.target.value }))}
-                    placeholder="Enter DOT code"
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
-                  />
+                  <Label className="text-white text-lg font-medium block mb-3">DOT Code (Optional)</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-gray-300 text-sm">Week (01-53)</Label>
+                      <Select value={currentTyre.dotWeek || ''} onValueChange={(value) => setCurrentTyre(prev => ({ ...prev, dotWeek: value }))}>
+                        <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                          <SelectValue placeholder="Select week" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-800 border-gray-700 max-h-64">
+                          {Array.from({ length: 53 }, (_, i) => {
+                            const week = (i + 1).toString().padStart(2, '0');
+                            return (
+                              <SelectItem key={week} value={week} className="text-white hover:bg-gray-700">
+                                {week}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-gray-300 text-sm">Year (e.g., 25 for 2025)</Label>
+                      <Select value={currentTyre.dotYear || ''} onValueChange={(value) => setCurrentTyre(prev => ({ ...prev, dotYear: value }))}>
+                        <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                          <SelectValue placeholder="Select year" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-800 border-gray-700">
+                          {Array.from({ length: 10 }, (_, i) => {
+                            const year = (25 - i).toString().padStart(2, '0');
+                            const fullYear = 2000 + parseInt(year);
+                            return (
+                              <SelectItem key={year} value={year} className="text-white hover:bg-gray-700">
+                                {year} ({fullYear})
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  {(currentTyre.dotWeek || currentTyre.dotYear) && (
+                    <div className="mt-2 p-2 bg-gray-700/30 rounded border border-gray-600">
+                      <p className="text-gray-300 text-sm">
+                        DOT Code: {currentTyre.dotWeek && currentTyre.dotYear 
+                          ? `${currentTyre.dotWeek}${currentTyre.dotYear}` 
+                          : 'Incomplete - select both week and year'
+                        }
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Tread depth legend */}
@@ -731,6 +812,28 @@ export default function WheelsInspection() {
                   </div>
                 </div>
 
+                {/* Photo Preview */}
+                {currentTyre.photoUrl && (
+                  <div className="bg-gray-700/30 p-4 rounded-lg border border-gray-600">
+                    <h4 className="text-white font-medium mb-2">Photo Preview</h4>
+                    <img 
+                      src={currentTyre.photoUrl} 
+                      alt="Tyre tread depth"
+                      className="w-full max-w-md mx-auto rounded-lg border border-gray-500"
+                    />
+                  </div>
+                )}
+
+                {/* Hidden file input */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handlePhotoCapture}
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                />
+
                 <div className="flex gap-4">
                   <Button
                     variant="outline"
@@ -739,21 +842,23 @@ export default function WheelsInspection() {
                   >
                     Back
                   </Button>
-                  <Button
-                    onClick={() => {
-                      // Simulate photo capture
-                      setCurrentTyre(prev => ({ ...prev, photoUrl: 'captured_photo.jpg' }));
-                      toast({
-                        title: "Photo Captured",
-                        description: "Tread depth photo saved with overlay.",
-                      });
-                      setTimeout(saveTyreData, 1000);
-                    }}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-                  >
-                    <Camera className="w-4 h-4 mr-2" />
-                    Capture Photo
-                  </Button>
+                  {!currentTyre.photoUrl ? (
+                    <Button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      <Camera className="w-4 h-4 mr-2" />
+                      Capture Photo
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={saveTyreData}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Save Tyre Data
+                    </Button>
+                  )}
                 </div>
               </div>
             )}
