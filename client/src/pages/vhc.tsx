@@ -258,7 +258,7 @@ export default function VHC() {
                       <div className="flex items-center space-x-3">
                         <Checkbox
                           checked={isOnRamp === true}
-                          onChange={() => setIsOnRamp(true)}
+                          onCheckedChange={() => setIsOnRamp(true)}
                           className="border-white/20"
                         />
                         <span className="text-white font-medium">Yes</span>
@@ -275,7 +275,7 @@ export default function VHC() {
                       <div className="flex items-center space-x-3">
                         <Checkbox
                           checked={isOnRamp === false}
-                          onChange={() => setIsOnRamp(false)}
+                          onCheckedChange={() => setIsOnRamp(false)}
                           className="border-white/20"
                         />
                         <span className="text-white font-medium">No</span>
@@ -302,7 +302,7 @@ export default function VHC() {
                       <div className="flex items-center space-x-3">
                         <Checkbox
                           checked={hasTpms === true}
-                          onChange={() => setHasTpms(true)}
+                          onCheckedChange={() => setHasTpms(true)}
                           className="border-white/20"
                         />
                         <span className="text-white font-medium">Yes</span>
@@ -322,7 +322,7 @@ export default function VHC() {
                       <div className="flex items-center space-x-3">
                         <Checkbox
                           checked={hasTpms === false}
-                          onChange={() => setHasTpms(false)}
+                          onCheckedChange={() => setHasTpms(false)}
                           className="border-white/20"
                         />
                         <span className="text-white font-medium">No</span>
@@ -347,7 +347,7 @@ export default function VHC() {
                         <div className="flex items-center space-x-3">
                           <Checkbox
                             checked={tpmsType === 'indirect'}
-                            onChange={() => setTpmsType('indirect')}
+                            onCheckedChange={() => setTpmsType('indirect')}
                             className="border-white/20"
                           />
                           <span className="text-white font-medium">Indirect</span>
@@ -364,7 +364,7 @@ export default function VHC() {
                         <div className="flex items-center space-x-3">
                           <Checkbox
                             checked={tpmsType === 'direct'}
-                            onChange={() => setTpmsType('direct')}
+                            onCheckedChange={() => setTpmsType('direct')}
                             className="border-white/20"
                           />
                           <span className="text-white font-medium">Direct</span>
