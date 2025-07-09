@@ -254,6 +254,8 @@ export default function VHC() {
   // Complete VHC and return to job card
   const completeVhc = async () => {
     try {
+      console.log('Starting VHC completion...');
+      
       // Update VHC status to completed
       const vhcData = {
         isOnRamp,
@@ -261,25 +263,36 @@ export default function VHC() {
         tpmsType: hasTpms ? tpmsType : undefined,
         currentStage: 'completed' as const,
         inspectionData: inspectionCategories,
+        selectedTasks,
+        completedTasks,
       };
 
+      console.log('Saving VHC data:', vhcData);
       await saveVhcMutation.mutateAsync(vhcData);
+      console.log('VHC data saved successfully');
       
-      // Update job status to completed
-      await apiRequest('PATCH', `/api/jobs/${jobId}/status`, {
-        status: 'completed'
+      // Update job status to VHC completed
+      console.log('Updating job status to vhc_completed...');
+      const jobResponse = await apiRequest('PATCH', `/api/jobs/${jobId}/status`, {
+        status: 'vhc_completed'
       });
+      console.log('Job status updated successfully:', jobResponse);
 
       toast({
         title: "VHC Completed",
         description: "Vehicle Health Check has been completed successfully.",
       });
       
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/jobs', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
+      
       navigate(`/jobs/${jobId}`);
     } catch (error) {
+      console.error('Error completing VHC:', error);
       toast({
         title: "Error",
-        description: "Failed to complete VHC. Please try again.",
+        description: `Failed to complete VHC: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
     }
