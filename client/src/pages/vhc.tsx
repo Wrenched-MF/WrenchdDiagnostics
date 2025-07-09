@@ -467,16 +467,6 @@ export default function VHC() {
                     <span className="text-white font-medium">{job?.customer?.name || 'Admin'}</span>
                   </div>
                 </div>
-
-                {/* Bottom Left - JOINT TEXT */}
-                <div className="absolute bottom-4 left-4">
-                  <Button
-                    variant="outline"
-                    className="bg-yellow-500 border-yellow-400 text-black hover:bg-yellow-400 px-6"
-                  >
-                    JOINT TEXT
-                  </Button>
-                </div>
               </div>
             )}
           </CardContent>
