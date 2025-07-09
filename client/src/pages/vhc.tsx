@@ -414,9 +414,9 @@ export default function VHC() {
             )}
 
             {currentStage === 'inspection' && (
-              <div className="bg-blue-600 text-white min-h-[600px] relative rounded-lg overflow-hidden">
-                {/* Top Navigation */}
-                <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
+              <div className="bg-black text-white min-h-[600px] relative rounded-lg overflow-hidden border border-green-500/30">
+                {/* Top Header */}
+                <div className="bg-green-600 text-white p-4 flex items-center justify-between">
                   <Button 
                     variant="ghost" 
                     size="sm"
@@ -424,63 +424,57 @@ export default function VHC() {
                     onClick={() => navigate(`/jobs/${jobId}`)}
                   >
                     <ArrowLeft className="w-5 h-5" />
+                    Go Back
                   </Button>
-                  <div className="text-white text-sm font-medium rotate-90 origin-center">
-                    Wheels and tyres
-                  </div>
                   <Button 
-                    variant="ghost" 
+                    variant="outline" 
                     size="sm"
-                    className="text-white hover:bg-white/20 p-2 border border-white/30"
+                    className="bg-white/20 border-white/30 text-white hover:bg-white/30"
                   >
-                    Check
+                    Add Task
                   </Button>
                 </div>
 
                 {/* Main Content Area */}
-                <div className="pt-20 pb-20 px-6 space-y-4">
-                  {inspectionCategories.map((category, index) => (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      className="w-full bg-white/10 border-white/30 text-white hover:bg-white/20 py-6 text-lg font-medium justify-start"
-                      onClick={() => {
-                        toast({
-                          title: "Coming Soon",
-                          description: `${category.name} inspection will be available soon.`,
-                        });
-                      }}
-                    >
-                      {category.name}
-                      {category.completed && (
-                        <CheckCircle className="w-5 h-5 ml-auto text-green-400" />
-                      )}
-                    </Button>
-                  ))}
+                <div className="p-6 space-y-4">
+                  {/* Wheels and tyres - Always first task */}
+                  <Button
+                    variant="outline"
+                    className="w-full bg-green-600/20 border-green-500/50 text-white hover:bg-green-600/30 py-8 text-xl font-medium justify-start"
+                    onClick={() => {
+                      toast({
+                        title: "Wheels and Tyres Inspection",
+                        description: "Opening detailed tyre inspection page...",
+                      });
+                      // Will navigate to detailed wheels inspection page
+                    }}
+                  >
+                    Wheels and tyres
+                    <CheckCircle className="w-6 h-6 ml-auto text-green-400" />
+                  </Button>
+
+                  {/* Other inspection categories - will be added later */}
+                  <div className="text-center text-white/60 py-8">
+                    <p>Additional inspection tasks will appear here</p>
+                    <p className="text-sm mt-2">Use "Add Task" to include more inspection categories</p>
+                  </div>
                 </div>
 
-                {/* Bottom Navigation */}
-                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-                  <div className="text-white text-sm">
-                    Last Recheck
+                {/* Bottom Right - Technician Name */}
+                <div className="absolute bottom-4 right-4">
+                  <div className="bg-green-600/20 border border-green-500/30 rounded px-4 py-2">
+                    <span className="text-white/80 text-sm">Technician: </span>
+                    <span className="text-white font-medium">{job?.customer?.name || 'Admin'}</span>
                   </div>
+                </div>
+
+                {/* Bottom Left - JOINT TEXT */}
+                <div className="absolute bottom-4 left-4">
                   <Button
                     variant="outline"
                     className="bg-yellow-500 border-yellow-400 text-black hover:bg-yellow-400 px-6"
                   >
                     JOINT TEXT
-                  </Button>
-                  <Button
-                    className="bg-green-600 hover:bg-green-700 text-white px-6"
-                    onClick={handleInspectionSave}
-                    disabled={saveVhcMutation.isPending}
-                  >
-                    {saveVhcMutation.isPending ? (
-                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                    ) : (
-                      <Save className="w-4 h-4 mr-2" />
-                    )}
-                    Save
                   </Button>
                 </div>
               </div>
