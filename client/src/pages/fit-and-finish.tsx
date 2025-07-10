@@ -264,20 +264,6 @@ export default function FitAndFinish() {
               {/* Car Diagram with Wheel Position Boxes */}
               <div className="relative flex items-center justify-center">
                 
-                {/* NSF Box */}
-                <div className="absolute -left-32 -top-16">
-                  <div className="w-24 h-24 bg-black border-2 border-green-400 rounded-lg flex items-center justify-center">
-                    <span className="text-green-300 text-lg font-bold">NSF</span>
-                  </div>
-                </div>
-
-                {/* OSF Box */}
-                <div className="absolute -right-32 -top-16">
-                  <div className="w-24 h-24 bg-black border-2 border-green-400 rounded-lg flex items-center justify-center">
-                    <span className="text-green-300 text-lg font-bold">OSF</span>
-                  </div>
-                </div>
-
                 {/* Car Body - using SVG-like styling to match the diagram */}
                 <div className="relative w-48 h-80 bg-gradient-to-b from-green-900/40 to-green-800/20 border-2 border-green-400 rounded-3xl">
                   
@@ -300,19 +286,33 @@ export default function FitAndFinish() {
                   {/* Car Details */}
                   <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-16 h-8 bg-green-500/20 border border-green-400 rounded"></div>
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-20 h-6 bg-green-500/20 border border-green-400 rounded"></div>
-                </div>
-
-                {/* NSR Box */}
-                <div className="absolute -left-32 top-16">
-                  <div className="w-24 h-24 bg-black border-2 border-green-400 rounded-lg flex items-center justify-center">
-                    <span className="text-green-300 text-lg font-bold">NSR</span>
+                  
+                  {/* NSF Box - positioned next to front left wheel */}
+                  <div className="absolute -left-20 top-2">
+                    <div className="w-16 h-16 bg-black border-2 border-green-400 rounded-lg flex items-center justify-center">
+                      <span className="text-green-300 text-sm font-bold">NSF</span>
+                    </div>
                   </div>
-                </div>
 
-                {/* OSR Box */}
-                <div className="absolute -right-32 top-16">
-                  <div className="w-24 h-24 bg-black border-2 border-green-400 rounded-lg flex items-center justify-center">
-                    <span className="text-green-300 text-lg font-bold">OSR</span>
+                  {/* OSF Box - positioned next to front right wheel */}
+                  <div className="absolute -right-20 top-2">
+                    <div className="w-16 h-16 bg-black border-2 border-green-400 rounded-lg flex items-center justify-center">
+                      <span className="text-green-300 text-sm font-bold">OSF</span>
+                    </div>
+                  </div>
+
+                  {/* NSR Box - positioned next to rear left wheel */}
+                  <div className="absolute -left-20 bottom-2">
+                    <div className="w-16 h-16 bg-black border-2 border-green-400 rounded-lg flex items-center justify-center">
+                      <span className="text-green-300 text-sm font-bold">NSR</span>
+                    </div>
+                  </div>
+
+                  {/* OSR Box - positioned next to rear right wheel */}
+                  <div className="absolute -right-20 bottom-2">
+                    <div className="w-16 h-16 bg-black border-2 border-green-400 rounded-lg flex items-center justify-center">
+                      <span className="text-green-300 text-sm font-bold">OSR</span>
+                    </div>
                   </div>
                 </div>
               </div>
