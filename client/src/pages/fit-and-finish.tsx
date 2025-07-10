@@ -225,14 +225,14 @@ export default function FitAndFinish() {
         />
 
         {/* Vehicle Information Bar */}
-        <EnhancedCard variant="gradient" className="mb-6">
+        <EnhancedCard variant="glass" className="mb-6 bg-gradient-to-r from-gray-900 to-black border-green-500/30">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="text-green-400 border-green-400">
+              <Badge variant="outline" className="text-green-400 border-green-400 bg-green-400/10">
                 {job.vrm}
               </Badge>
-              <span className="text-white font-medium">
-                MERCEDES EQB 250...
+              <span className="text-green-400 font-medium">
+                {job.make} {job.model} ({job.year})
               </span>
             </div>
             <TouchButton
@@ -240,6 +240,7 @@ export default function FitAndFinish() {
               size="sm"
               onClick={handleSave}
               loading={saveMutation.isPending}
+              className="bg-green-600 hover:bg-green-700 border-green-500"
             >
               <Save className="w-4 h-4 mr-2" />
               SAVE
@@ -248,7 +249,7 @@ export default function FitAndFinish() {
         </EnhancedCard>
 
         {/* Front Axle Section */}
-        <EnhancedCard title="Front Axle" variant="glass">
+        <EnhancedCard title="Front Axle" variant="glass" className="bg-gradient-to-br from-gray-900 to-black border-green-500/30">
           <div className="space-y-6">
             <div className="flex items-center space-x-2">
               <input
@@ -258,22 +259,22 @@ export default function FitAndFinish() {
                   ...prev,
                   frontAxle: { ...prev.frontAxle, newTyresFitted: e.target.checked }
                 }))}
-                className="w-4 h-4"
+                className="w-4 h-4 accent-green-500"
               />
-              <Label className="text-white">New tyres fitted</Label>
+              <Label className="text-green-400 font-medium">New tyres fitted</Label>
             </div>
 
             {/* Tyre Removed */}
             <div className="space-y-4">
-              <h4 className="text-white font-medium">Tyre Removed</h4>
+              <h4 className="text-green-400 font-medium border-b border-green-500/30 pb-2">Tyre Removed</h4>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div>
-                  <Label className="text-white text-sm">DOT</Label>
+                  <Label className="text-green-300 text-sm font-medium">DOT</Label>
                   <Select
                     value={fitFinishData.frontAxle?.tyreRemoved?.dot || ''}
                     onValueChange={(value) => updateTyreData('frontAxle', 'tyreRemoved', 'dot', value)}
                   >
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -284,12 +285,12 @@ export default function FitAndFinish() {
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-white text-sm">Brand</Label>
+                  <Label className="text-green-300 text-sm font-medium">Brand</Label>
                   <Select
                     value={fitFinishData.frontAxle?.tyreRemoved?.brand || ''}
                     onValueChange={(value) => updateTyreData('frontAxle', 'tyreRemoved', 'brand', value)}
                   >
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -301,12 +302,12 @@ export default function FitAndFinish() {
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-white text-sm">Brake Rig Tool Status</Label>
+                  <Label className="text-green-300 text-sm font-medium">Brake Rig Tool Status</Label>
                   <Select
                     value={fitFinishData.frontAxle?.tyreRemoved?.brakeRigStatus || ''}
                     onValueChange={(value) => updateTyreData('frontAxle', 'tyreRemoved', 'brakeRigStatus', value)}
                   >
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -317,20 +318,20 @@ export default function FitAndFinish() {
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-white text-sm">Tyre Pressure (PSI)</Label>
+                  <Label className="text-green-300 text-sm font-medium">Tyre Pressure (PSI)</Label>
                   <Input
                     value={fitFinishData.frontAxle?.tyreRemoved?.tyrePressure || ''}
                     onChange={(e) => updateTyreData('frontAxle', 'tyreRemoved', 'tyrePressure', e.target.value)}
-                    className="bg-white/10 border-white/20 text-white"
+                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
                     placeholder="32"
                   />
                 </div>
                 <div>
-                  <Label className="text-white text-sm">Tyre Size</Label>
+                  <Label className="text-green-300 text-sm font-medium">Tyre Size</Label>
                   <Input
                     value={fitFinishData.frontAxle?.tyreRemoved?.tyreSize || ''}
                     onChange={(e) => updateTyreData('frontAxle', 'tyreRemoved', 'tyreSize', e.target.value)}
-                    className="bg-white/10 border-white/20 text-white"
+                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
                     placeholder="235/55R19"
                   />
                 </div>
@@ -339,14 +340,14 @@ export default function FitAndFinish() {
 
             {/* N/S Front */}
             <div className="space-y-4">
-              <h4 className="text-white font-medium">N/S Front...</h4>
+              <h4 className="text-green-400 font-medium border-b border-green-500/30 pb-2">N/S Front</h4>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div>
                   <Select
                     value={fitFinishData.frontAxle?.nsfront?.dot || ''}
                     onValueChange={(value) => updateTyreData('frontAxle', 'nsfront', 'dot', value)}
                   >
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -390,7 +391,7 @@ export default function FitAndFinish() {
                   <Input
                     value={fitFinishData.frontAxle?.nsfront?.tyrePressure || ''}
                     onChange={(e) => updateTyreData('frontAxle', 'nsfront', 'tyrePressure', e.target.value)}
-                    className="bg-white/10 border-white/20 text-white"
+                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
                     placeholder="32"
                   />
                 </div>
@@ -398,7 +399,7 @@ export default function FitAndFinish() {
                   <Input
                     value={fitFinishData.frontAxle?.nsfront?.tyreSize || ''}
                     onChange={(e) => updateTyreData('frontAxle', 'nsfront', 'tyreSize', e.target.value)}
-                    className="bg-white/10 border-white/20 text-white"
+                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
                     placeholder="235/55R19"
                   />
                 </div>
@@ -407,14 +408,14 @@ export default function FitAndFinish() {
 
             {/* O/S Front */}
             <div className="space-y-4">
-              <h4 className="text-white font-medium">O/S Front...</h4>
+              <h4 className="text-green-400 font-medium border-b border-green-500/30 pb-2">O/S Front</h4>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div>
                   <Select
                     value={fitFinishData.frontAxle?.osfront?.dot || ''}
                     onValueChange={(value) => updateTyreData('frontAxle', 'osfront', 'dot', value)}
                   >
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -429,7 +430,7 @@ export default function FitAndFinish() {
                     value={fitFinishData.frontAxle?.osfront?.brand || ''}
                     onValueChange={(value) => updateTyreData('frontAxle', 'osfront', 'brand', value)}
                   >
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -444,7 +445,7 @@ export default function FitAndFinish() {
                     value={fitFinishData.frontAxle?.osfront?.brakeRigStatus || ''}
                     onValueChange={(value) => updateTyreData('frontAxle', 'osfront', 'brakeRigStatus', value)}
                   >
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -458,7 +459,7 @@ export default function FitAndFinish() {
                   <Input
                     value={fitFinishData.frontAxle?.osfront?.tyrePressure || ''}
                     onChange={(e) => updateTyreData('frontAxle', 'osfront', 'tyrePressure', e.target.value)}
-                    className="bg-white/10 border-white/20 text-white"
+                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
                     placeholder="32"
                   />
                 </div>
@@ -466,7 +467,7 @@ export default function FitAndFinish() {
                   <Input
                     value={fitFinishData.frontAxle?.osfront?.tyreSize || ''}
                     onChange={(e) => updateTyreData('frontAxle', 'osfront', 'tyreSize', e.target.value)}
-                    className="bg-white/10 border-white/20 text-white"
+                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
                     placeholder="235/55R19"
                   />
                 </div>
@@ -476,7 +477,7 @@ export default function FitAndFinish() {
         </EnhancedCard>
 
         {/* Rear Axle Section */}
-        <EnhancedCard title="Rear Axle" variant="glass">
+        <EnhancedCard title="Rear Axle" variant="glass" className="bg-gradient-to-br from-gray-900 to-black border-green-500/30">
           <div className="space-y-6">
             <div className="flex items-center space-x-2">
               <input
@@ -486,22 +487,21 @@ export default function FitAndFinish() {
                   ...prev,
                   rearAxle: { ...prev.rearAxle, newTyresFitted: e.target.checked }
                 }))}
-                className="w-4 h-4"
+                className="w-4 h-4 accent-green-500"
               />
-              <Label className="text-white">New tyres fitted</Label>
+              <Label className="text-green-400 font-medium">New tyres fitted</Label>
             </div>
 
-            {/* Similar structure for rear axle... */}
             <div className="space-y-4">
-              <h4 className="text-white font-medium">Tyre Removed</h4>
+              <h4 className="text-green-400 font-medium border-b border-green-500/30 pb-2">Tyre Removed</h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <Label className="text-white text-sm">DOT</Label>
+                  <Label className="text-green-300 text-sm font-medium">DOT</Label>
                   <Select
                     value={fitFinishData.rearAxle?.tyreRemoved?.dot || ''}
                     onValueChange={(value) => updateTyreData('rearAxle', 'tyreRemoved', 'dot', value)}
                   >
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -512,12 +512,12 @@ export default function FitAndFinish() {
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-white text-sm">Brand</Label>
+                  <Label className="text-green-300 text-sm font-medium">Brand</Label>
                   <Select
                     value={fitFinishData.rearAxle?.tyreRemoved?.brand || ''}
                     onValueChange={(value) => updateTyreData('rearAxle', 'tyreRemoved', 'brand', value)}
                   >
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -528,20 +528,20 @@ export default function FitAndFinish() {
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-white text-sm">Tyre Pressure (PSI)</Label>
+                  <Label className="text-green-300 text-sm font-medium">Tyre Pressure (PSI)</Label>
                   <Input
                     value={fitFinishData.rearAxle?.tyreRemoved?.tyrePressure || ''}
                     onChange={(e) => updateTyreData('rearAxle', 'tyreRemoved', 'tyrePressure', e.target.value)}
-                    className="bg-white/10 border-white/20 text-white"
+                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
                     placeholder="32"
                   />
                 </div>
                 <div>
-                  <Label className="text-white text-sm">Tyre Size</Label>
+                  <Label className="text-green-300 text-sm font-medium">Tyre Size</Label>
                   <Input
                     value={fitFinishData.rearAxle?.tyreRemoved?.tyreSize || ''}
                     onChange={(e) => updateTyreData('rearAxle', 'tyreRemoved', 'tyreSize', e.target.value)}
-                    className="bg-white/10 border-white/20 text-white"
+                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
                     placeholder="235/55R19"
                   />
                 </div>
@@ -551,15 +551,15 @@ export default function FitAndFinish() {
         </EnhancedCard>
 
         {/* Spare Section */}
-        <EnhancedCard title="Spare" variant="glass">
+        <EnhancedCard title="Spare" variant="glass" className="bg-gradient-to-br from-gray-900 to-black border-green-500/30">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <Label className="text-white text-sm">DOT</Label>
+              <Label className="text-green-300 text-sm font-medium">DOT</Label>
               <Select
                 value={fitFinishData.spare?.tyreRemoved?.dot || ''}
                 onValueChange={(value) => updateTyreData('spare', 'tyreRemoved', 'dot', value)}
               >
-                <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -570,12 +570,12 @@ export default function FitAndFinish() {
               </Select>
             </div>
             <div>
-              <Label className="text-white text-sm">Brand</Label>
+              <Label className="text-green-300 text-sm font-medium">Brand</Label>
               <Select
                 value={fitFinishData.spare?.tyreRemoved?.brand || ''}
                 onValueChange={(value) => updateTyreData('spare', 'tyreRemoved', 'brand', value)}
               >
-                <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -586,20 +586,20 @@ export default function FitAndFinish() {
               </Select>
             </div>
             <div>
-              <Label className="text-white text-sm">Tyre Pressure (PSI)</Label>
+              <Label className="text-green-300 text-sm font-medium">Tyre Pressure (PSI)</Label>
               <Input
                 value={fitFinishData.spare?.tyreRemoved?.tyrePressure || ''}
                 onChange={(e) => updateTyreData('spare', 'tyreRemoved', 'tyrePressure', e.target.value)}
-                className="bg-white/10 border-white/20 text-white"
+                className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
                 placeholder="32"
               />
             </div>
             <div>
-              <Label className="text-white text-sm">Tyre Size</Label>
+              <Label className="text-green-300 text-sm font-medium">Tyre Size</Label>
               <Input
                 value={fitFinishData.spare?.tyreRemoved?.tyreSize || ''}
                 onChange={(e) => updateTyreData('spare', 'tyreRemoved', 'tyreSize', e.target.value)}
-                className="bg-white/10 border-white/20 text-white"
+                className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
                 placeholder="235/55R19"
               />
             </div>
@@ -612,6 +612,7 @@ export default function FitAndFinish() {
             variant="outline"
             onClick={handleSave}
             loading={saveMutation.isPending}
+            className="border-green-500 text-green-400 hover:bg-green-500/10"
           >
             <Save className="w-4 h-4 mr-2" />
             Save Progress
@@ -620,6 +621,7 @@ export default function FitAndFinish() {
             variant="primary"
             onClick={handleComplete}
             loading={completeMutation.isPending}
+            className="bg-green-600 hover:bg-green-700 border-green-500"
           >
             <CheckCircle className="w-4 h-4 mr-2" />
             Complete Fit & Finish
