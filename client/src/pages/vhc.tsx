@@ -64,7 +64,8 @@ export default function VHC() {
     'Air conditioning',
     'Summer checks',
     'Winter checks',
-    'Service inspection'
+    'Service inspection',
+    'Fit & Finish'
   ];
 
   // Add task to selected list
@@ -606,6 +607,9 @@ export default function VHC() {
                               break;
                             case 'Service inspection':
                               navigate(`/service-inspection/${jobId}`);
+                              break;
+                            case 'Fit & Finish':
+                              navigate(`/fit-and-finish/${jobId}`);
                               break;
                             default:
                               toast({

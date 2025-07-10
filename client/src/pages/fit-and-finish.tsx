@@ -157,16 +157,49 @@ export default function FitAndFinish() {
     },
   });
 
+  // Mark task as completed in VHC
+  const markVhcTaskCompleted = async (taskName: string) => {
+    try {
+      const vhcResponse = await fetch(`/api/vhc/${jobId}`, {
+        credentials: 'include'
+      });
+      
+      if (vhcResponse.ok) {
+        const vhcData = await vhcResponse.json();
+        const completedTasks = vhcData.completedTasks || [];
+        
+        if (!completedTasks.includes(taskName)) {
+          const updatedCompleted = [...completedTasks, taskName];
+          
+          await apiRequest('POST', '/api/vhc', {
+            jobId,
+            isOnRamp: vhcData.isOnRamp,
+            hasTpms: vhcData.hasTpms,
+            tpmsType: vhcData.tpmsType,
+            currentStage: vhcData.currentStage,
+            selectedTasks: vhcData.selectedTasks,
+            completedTasks: updatedCompleted,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error updating VHC completion status:', error);
+    }
+  };
+
   // Complete fit and finish
   const completeMutation = useMutation({
     mutationFn: async () => {
       const data = { ...fitFinishData, status: 'completed' };
       return saveMutation.mutateAsync(data);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Mark the task as completed in VHC
+      await markVhcTaskCompleted('Fit & Finish');
+      
       toast({
-        title: "Completed",
-        description: "Fit and finish completed successfully.",
+        title: "Fit & Finish Complete",
+        description: "All tire data has been recorded successfully.",
       });
       navigate(`/vhc/${jobId}`);
     },
