@@ -137,6 +137,8 @@ export default function JobCard() {
       navigate(`/pre-inspection/${id}`);
     } else if (categoryId === 'vhc') {
       navigate(`/vhc/${id}`);
+    } else if (categoryId === 'fit-finish') {
+      navigate(`/fit-and-finish/${id}`);
     } else {
       // Other inspection categories (to be implemented)
       console.log(`Opening ${categoryId} inspection`);
