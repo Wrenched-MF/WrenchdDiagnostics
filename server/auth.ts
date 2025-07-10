@@ -2,8 +2,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Express } from "express";
 import session from "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
+import bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import connectPg from "connect-pg-simple";
@@ -14,19 +13,17 @@ declare global {
   }
 }
 
-const scryptAsync = promisify(scrypt);
-
 async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
+  return await bcrypt.hash(password, 10);
 }
 
 async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split(".");
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
+  try {
+    return await bcrypt.compare(supplied, stored);
+  } catch (error) {
+    console.error("Password comparison error:", error);
+    return false;
+  }
 }
 
 export function setupAuth(app: Express) {
@@ -56,13 +53,29 @@ export function setupAuth(app: Express) {
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
+        console.log('Login attempt for username:', username);
         const user = await storage.getUserByUsername(username);
-        if (!user || !(await comparePasswords(password, user.password))) {
+        if (!user) {
+          console.log('User not found:', username);
+          return done(null, false);
+        }
+        
+        console.log('Password comparison for user:', { id: user.id, username: user.username });
+        console.log('Stored password hash:', user.password);
+        console.log('Supplied password:', password);
+        
+        const passwordMatch = await comparePasswords(password, user.password);
+        console.log('Password match result:', passwordMatch);
+        
+        if (!passwordMatch) {
+          console.log('Password mismatch for user:', username);
           return done(null, false);
         } else {
+          console.log('Password match successful for user:', username);
           return done(null, user);
         }
       } catch (error) {
+        console.error('LocalStrategy error:', error);
         return done(error);
       }
     }),
