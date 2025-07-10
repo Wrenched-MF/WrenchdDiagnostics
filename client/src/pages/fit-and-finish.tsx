@@ -201,25 +201,17 @@ export default function FitAndFinish() {
   const completeMutation = useMutation({
     mutationFn: async () => {
       const data = { ...fitFinishData, status: 'completed' };
-      await saveMutation.mutateAsync(data);
-      
+      return saveMutation.mutateAsync(data);
+    },
+    onSuccess: async () => {
       // Mark the task as completed in VHC
       await markVhcTaskCompleted('Fit & Finish');
       
-      // Update job status to completed
-      await apiRequest('PATCH', `/api/jobs/${jobId}/status`, {
-        status: 'completed'
-      });
-      
-      return data;
-    },
-    onSuccess: () => {
       toast({
-        title: "Fit & Finish Complete", 
-        description: "Job has been marked as completed and all data saved.",
+        title: "Fit & Finish Complete",
+        description: "All tire data has been recorded successfully.",
       });
-      // Navigate to job management (home page)
-      navigate('/');
+      navigate(`/vhc/${jobId}`);
     },
   });
 
