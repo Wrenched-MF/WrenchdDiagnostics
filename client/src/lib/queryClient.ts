@@ -72,6 +72,11 @@ export async function apiRequest(
       }
     }
 
+    // Don't interfere with auth endpoints - let them fail normally
+    if (url.includes('/api/user') || url.includes('/api/auth') || url.includes('/api/logout')) {
+      throw error;
+    }
+
     throw error;
   }
 }
@@ -157,10 +162,11 @@ export const getQueryFn: <T>(options: {
 
       return data;
     } catch (error) {
-      // Try to serve from cache if offline or network error
-      if (!navigator.onLine || error.message.includes('fetch')) {
+      // Only try cache for non-auth endpoints when offline
+      const url = queryKey[0] as string;
+      if (!navigator.onLine && !url.includes('/api/user') && !url.includes('/api/auth')) {
         try {
-          const cachedData = await getCachedResponse(queryKey[0] as string);
+          const cachedData = await getCachedResponse(url);
           if (cachedData) {
             return { ...cachedData, _fromCache: true };
           }
@@ -181,8 +187,9 @@ export const queryClient = new QueryClient({
       refetchOnReconnect: true, // Refetch when reconnecting
       staleTime: 5 * 60 * 1000, // 5 minutes
       retry: (failureCount, error) => {
-        // Don't retry if offline
-        if (!navigator.onLine) return false;
+        // Don't retry auth endpoints or if offline
+        const isAuthError = error.message.includes('401') || error.message.includes('Unauthorized');
+        if (!navigator.onLine || isAuthError) return false;
         return failureCount < 2;
       },
     },
