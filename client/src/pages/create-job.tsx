@@ -13,6 +13,10 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { ArrowLeft, Search, Plus, Trash2, Car, User, MapPin, Phone, Mail, Edit, CheckCircle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import wrenchdLogo from "@assets/wrenchd_ivhc_icon_512x512_1752010342000.png";
+import { ResponsiveLayout, PageHeader } from "@/components/responsive-layout";
+import { EnhancedCard } from "@/components/enhanced-card";
+import { LoadingSkeleton } from "@/components/loading-skeleton";
+import { Breadcrumb } from "@/components/breadcrumb";
 
 // Validation schemas
 const vrmSchema = z.object({

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 // import { TooltipProvider } from "@/components/ui/tooltip";
 import { useState, useEffect } from "react";
 import LoadingPage from "@/pages/loading";
+import { ErrorBoundary } from "@/components/error-boundary";
 import HomePage from "@/pages/home";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AuthPage from "@/pages/auth-page";
@@ -82,13 +83,13 @@ function Router() {
   );
 }
 
-function App() {
+export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Toaster />
-      <Router />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <Router />
+        <Toaster />
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
-
-export default App;
