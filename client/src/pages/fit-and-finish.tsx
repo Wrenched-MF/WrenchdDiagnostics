@@ -1,19 +1,11 @@
-import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save, CheckCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { TouchButton } from "@/components/tablet-touch";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, getQueryFn } from "@/lib/queryClient";
-import { ResponsiveLayout, PageHeader } from "@/components/responsive-layout";
-import { EnhancedCard } from "@/components/enhanced-card";
-import { TouchButton } from "@/components/tablet-touch";
+import { ArrowLeft, CheckCircle, Save } from "lucide-react";
 
 interface FitAndFinishData {
   id: string;
@@ -124,7 +116,18 @@ export default function FitAndFinish() {
   // Fetch existing fit and finish data
   const { data: existingData } = useQuery({
     queryKey: [`/api/fit-finish/${jobId}`],
-    queryFn: getQueryFn({ on401: "returnNull" }),
+    queryFn: async () => {
+      const response = await fetch(`/api/fit-finish/${jobId}`, {
+        credentials: 'include'
+      });
+      if (response.status === 404) {
+        return null; // No existing data is fine
+      }
+      if (!response.ok) {
+        throw new Error(`Failed to fetch fit-finish data: ${response.status}`);
+      }
+      return response.json();
+    },
     enabled: !!jobId,
   });
 
@@ -237,430 +240,165 @@ export default function FitAndFinish() {
   }
 
   return (
-    <ResponsiveLayout maxWidth="7xl">
-      <div className="space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black p-4">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <PageHeader
-          title="Fit and Finish"
-          subtitle={`${job.vrm} • ${job.make} ${job.model} (${job.year})`}
-          icon={<CheckCircle className="w-6 h-6 text-green-400" />}
-          actions={
-            <div className="flex space-x-4">
-              <TouchButton
-                variant="outline"
-                onClick={() => navigate(`/vhc/${jobId}`)}
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to VHC
-              </TouchButton>
-            </div>
-          }
-        />
-
-        {/* Vehicle Information Bar */}
-        <EnhancedCard variant="glass" className="mb-6 bg-gradient-to-r from-gray-900 to-black border-green-500/30">
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="text-green-400 border-green-400 bg-green-400/10">
-                {job.vrm}
-              </Badge>
-              <span className="text-green-400 font-medium">
-                {job.make} {job.model} ({job.year})
-              </span>
-            </div>
-            <TouchButton
-              variant="primary"
-              size="sm"
-              onClick={handleSave}
-              loading={saveMutation.isPending}
-              className="bg-green-600 hover:bg-green-700 border-green-500"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              SAVE
-            </TouchButton>
-          </div>
-        </EnhancedCard>
-
-        {/* Front Axle Section */}
-        <EnhancedCard title="Front Axle" variant="glass" className="bg-gradient-to-br from-gray-900 to-black border-green-500/30">
-          <div className="space-y-6">
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={fitFinishData.frontAxle?.newTyresFitted || false}
-                onChange={(e) => setFitFinishData(prev => ({
-                  ...prev,
-                  frontAxle: { ...prev.frontAxle, newTyresFitted: e.target.checked }
-                }))}
-                className="w-4 h-4 accent-green-500"
-              />
-              <Label className="text-green-400 font-medium">New tyres fitted</Label>
-            </div>
-
-            {/* Tyre Removed */}
-            <div className="space-y-4">
-              <h4 className="text-green-400 font-medium border-b border-green-500/30 pb-2">Tyre Removed</h4>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div>
-                  <Label className="text-green-300 text-sm font-medium">DOT</Label>
-                  <Select
-                    value={fitFinishData.frontAxle?.tyreRemoved?.dot || ''}
-                    onValueChange={(value) => updateTyreData('frontAxle', 'tyreRemoved', 'dot', value)}
-                  >
-                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0223">0223</SelectItem>
-                      <SelectItem value="0323">0323</SelectItem>
-                      <SelectItem value="0423">0423</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-green-300 text-sm font-medium">Brand</Label>
-                  <Select
-                    value={fitFinishData.frontAxle?.tyreRemoved?.brand || ''}
-                    onValueChange={(value) => updateTyreData('frontAxle', 'tyreRemoved', 'brand', value)}
-                  >
-                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Michelin">Michelin</SelectItem>
-                      <SelectItem value="Bridgestone">Bridgestone</SelectItem>
-                      <SelectItem value="Continental">Continental</SelectItem>
-                      <SelectItem value="Pirelli">Pirelli</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-green-300 text-sm font-medium">Brake Rig Tool Status</Label>
-                  <Select
-                    value={fitFinishData.frontAxle?.tyreRemoved?.brakeRigStatus || ''}
-                    onValueChange={(value) => updateTyreData('frontAxle', 'tyreRemoved', 'brakeRigStatus', value)}
-                  >
-                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Pass">Pass</SelectItem>
-                      <SelectItem value="Fail">Fail</SelectItem>
-                      <SelectItem value="Advisory">Advisory</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-green-300 text-sm font-medium">Tyre Pressure (PSI)</Label>
-                  <Input
-                    value={fitFinishData.frontAxle?.tyreRemoved?.tyrePressure || ''}
-                    onChange={(e) => updateTyreData('frontAxle', 'tyreRemoved', 'tyrePressure', e.target.value)}
-                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
-                    placeholder="32"
-                  />
-                </div>
-                <div>
-                  <Label className="text-green-300 text-sm font-medium">Tyre Size</Label>
-                  <Input
-                    value={fitFinishData.frontAxle?.tyreRemoved?.tyreSize || ''}
-                    onChange={(e) => updateTyreData('frontAxle', 'tyreRemoved', 'tyreSize', e.target.value)}
-                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
-                    placeholder="235/55R19"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* N/S Front */}
-            <div className="space-y-4">
-              <h4 className="text-green-400 font-medium border-b border-green-500/30 pb-2">N/S Front</h4>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div>
-                  <Select
-                    value={fitFinishData.frontAxle?.nsfront?.dot || ''}
-                    onValueChange={(value) => updateTyreData('frontAxle', 'nsfront', 'dot', value)}
-                  >
-                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0223">0223</SelectItem>
-                      <SelectItem value="0323">0323</SelectItem>
-                      <SelectItem value="0423">0423</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Select
-                    value={fitFinishData.frontAxle?.nsfront?.brand || ''}
-                    onValueChange={(value) => updateTyreData('frontAxle', 'nsfront', 'brand', value)}
-                  >
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Michelin">Michelin</SelectItem>
-                      <SelectItem value="Bridgestone">Bridgestone</SelectItem>
-                      <SelectItem value="Continental">Continental</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Select
-                    value={fitFinishData.frontAxle?.nsfront?.brakeRigStatus || ''}
-                    onValueChange={(value) => updateTyreData('frontAxle', 'nsfront', 'brakeRigStatus', value)}
-                  >
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Pass">Pass</SelectItem>
-                      <SelectItem value="Fail">Fail</SelectItem>
-                      <SelectItem value="Advisory">Advisory</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Input
-                    value={fitFinishData.frontAxle?.nsfront?.tyrePressure || ''}
-                    onChange={(e) => updateTyreData('frontAxle', 'nsfront', 'tyrePressure', e.target.value)}
-                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
-                    placeholder="32"
-                  />
-                </div>
-                <div>
-                  <Input
-                    value={fitFinishData.frontAxle?.nsfront?.tyreSize || ''}
-                    onChange={(e) => updateTyreData('frontAxle', 'nsfront', 'tyreSize', e.target.value)}
-                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
-                    placeholder="235/55R19"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* O/S Front */}
-            <div className="space-y-4">
-              <h4 className="text-green-400 font-medium border-b border-green-500/30 pb-2">O/S Front</h4>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div>
-                  <Select
-                    value={fitFinishData.frontAxle?.osfront?.dot || ''}
-                    onValueChange={(value) => updateTyreData('frontAxle', 'osfront', 'dot', value)}
-                  >
-                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0223">0223</SelectItem>
-                      <SelectItem value="0323">0323</SelectItem>
-                      <SelectItem value="0423">0423</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Select
-                    value={fitFinishData.frontAxle?.osfront?.brand || ''}
-                    onValueChange={(value) => updateTyreData('frontAxle', 'osfront', 'brand', value)}
-                  >
-                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Michelin">Michelin</SelectItem>
-                      <SelectItem value="Bridgestone">Bridgestone</SelectItem>
-                      <SelectItem value="Continental">Continental</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Select
-                    value={fitFinishData.frontAxle?.osfront?.brakeRigStatus || ''}
-                    onValueChange={(value) => updateTyreData('frontAxle', 'osfront', 'brakeRigStatus', value)}
-                  >
-                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Pass">Pass</SelectItem>
-                      <SelectItem value="Fail">Fail</SelectItem>
-                      <SelectItem value="Advisory">Advisory</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Input
-                    value={fitFinishData.frontAxle?.osfront?.tyrePressure || ''}
-                    onChange={(e) => updateTyreData('frontAxle', 'osfront', 'tyrePressure', e.target.value)}
-                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
-                    placeholder="32"
-                  />
-                </div>
-                <div>
-                  <Input
-                    value={fitFinishData.frontAxle?.osfront?.tyreSize || ''}
-                    onChange={(e) => updateTyreData('frontAxle', 'osfront', 'tyreSize', e.target.value)}
-                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
-                    placeholder="235/55R19"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </EnhancedCard>
-
-        {/* Rear Axle Section */}
-        <EnhancedCard title="Rear Axle" variant="glass" className="bg-gradient-to-br from-gray-900 to-black border-green-500/30">
-          <div className="space-y-6">
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={fitFinishData.rearAxle?.newTyresFitted || false}
-                onChange={(e) => setFitFinishData(prev => ({
-                  ...prev,
-                  rearAxle: { ...prev.rearAxle, newTyresFitted: e.target.checked }
-                }))}
-                className="w-4 h-4 accent-green-500"
-              />
-              <Label className="text-green-400 font-medium">New tyres fitted</Label>
-            </div>
-
-            <div className="space-y-4">
-              <h4 className="text-green-400 font-medium border-b border-green-500/30 pb-2">Tyre Removed</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <Label className="text-green-300 text-sm font-medium">DOT</Label>
-                  <Select
-                    value={fitFinishData.rearAxle?.tyreRemoved?.dot || ''}
-                    onValueChange={(value) => updateTyreData('rearAxle', 'tyreRemoved', 'dot', value)}
-                  >
-                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0223">0223</SelectItem>
-                      <SelectItem value="0323">0323</SelectItem>
-                      <SelectItem value="0423">0423</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-green-300 text-sm font-medium">Brand</Label>
-                  <Select
-                    value={fitFinishData.rearAxle?.tyreRemoved?.brand || ''}
-                    onValueChange={(value) => updateTyreData('rearAxle', 'tyreRemoved', 'brand', value)}
-                  >
-                    <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Michelin">Michelin</SelectItem>
-                      <SelectItem value="Bridgestone">Bridgestone</SelectItem>
-                      <SelectItem value="Continental">Continental</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-green-300 text-sm font-medium">Tyre Pressure (PSI)</Label>
-                  <Input
-                    value={fitFinishData.rearAxle?.tyreRemoved?.tyrePressure || ''}
-                    onChange={(e) => updateTyreData('rearAxle', 'tyreRemoved', 'tyrePressure', e.target.value)}
-                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
-                    placeholder="32"
-                  />
-                </div>
-                <div>
-                  <Label className="text-green-300 text-sm font-medium">Tyre Size</Label>
-                  <Input
-                    value={fitFinishData.rearAxle?.tyreRemoved?.tyreSize || ''}
-                    onChange={(e) => updateTyreData('rearAxle', 'tyreRemoved', 'tyreSize', e.target.value)}
-                    className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
-                    placeholder="235/55R19"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </EnhancedCard>
-
-        {/* Spare Section */}
-        <EnhancedCard title="Spare" variant="glass" className="bg-gradient-to-br from-gray-900 to-black border-green-500/30">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <Label className="text-green-300 text-sm font-medium">DOT</Label>
-              <Select
-                value={fitFinishData.spare?.tyreRemoved?.dot || ''}
-                onValueChange={(value) => updateTyreData('spare', 'tyreRemoved', 'dot', value)}
-              >
-                <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0223">0223</SelectItem>
-                  <SelectItem value="0323">0323</SelectItem>
-                  <SelectItem value="0423">0423</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-green-300 text-sm font-medium">Brand</Label>
-              <Select
-                value={fitFinishData.spare?.tyreRemoved?.brand || ''}
-                onValueChange={(value) => updateTyreData('spare', 'tyreRemoved', 'brand', value)}
-              >
-                <SelectTrigger className="bg-black/50 border-green-500/40 text-green-100 hover:border-green-400 focus:border-green-400">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Michelin">Michelin</SelectItem>
-                  <SelectItem value="Bridgestone">Bridgestone</SelectItem>
-                  <SelectItem value="Continental">Continental</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-green-300 text-sm font-medium">Tyre Pressure (PSI)</Label>
-              <Input
-                value={fitFinishData.spare?.tyreRemoved?.tyrePressure || ''}
-                onChange={(e) => updateTyreData('spare', 'tyreRemoved', 'tyrePressure', e.target.value)}
-                className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
-                placeholder="32"
-              />
-            </div>
-            <div>
-              <Label className="text-green-300 text-sm font-medium">Tyre Size</Label>
-              <Input
-                value={fitFinishData.spare?.tyreRemoved?.tyreSize || ''}
-                onChange={(e) => updateTyreData('spare', 'tyreRemoved', 'tyreSize', e.target.value)}
-                className="bg-black/50 border-green-500/40 text-green-100 placeholder-green-300/50 hover:border-green-400 focus:border-green-400"
-                placeholder="235/55R19"
-              />
-            </div>
-          </div>
-        </EnhancedCard>
-
-        {/* Action Buttons */}
-        <div className="flex justify-end space-x-4 pt-6">
+        <div className="flex items-center justify-between mb-6">
           <TouchButton
             variant="outline"
-            onClick={handleSave}
-            loading={saveMutation.isPending}
-            className="border-green-500 text-green-400 hover:bg-green-500/10"
+            onClick={() => navigate(`/vhc/${jobId}`)}
+            className="text-green-400 border-green-500/50 hover:border-green-400"
           >
-            <Save className="w-4 h-4 mr-2" />
-            Save Progress
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            BACK
           </TouchButton>
+          <h1 className="text-2xl font-bold text-green-400">{job.make} {job.model} ({job.year})</h1>
           <TouchButton
             variant="primary"
-            onClick={handleComplete}
-            loading={completeMutation.isPending}
+            onClick={handleSave}
+            loading={saveMutation.isPending}
             className="bg-green-600 hover:bg-green-700 border-green-500"
           >
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Complete Fit & Finish
+            SAVE
           </TouchButton>
         </div>
+
+        {/* Main Content */}
+        <div className="bg-black border border-green-500/30 rounded-lg p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {/* Left Column - Equipment Check */}
+            <div className="space-y-4">
+              <h3 className="text-green-400 font-semibold text-lg border-b border-green-500/30 pb-2">Equipment Check:</h3>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-gray-900/50 border border-green-500/20 rounded">
+                  <span className="text-green-100">New Tyres Fitted:</span>
+                  <input 
+                    type="checkbox" 
+                    checked={fitFinishData.frontAxle?.newTyresFitted || false}
+                    onChange={(e) => setFitFinishData(prev => ({
+                      ...prev,
+                      frontAxle: { ...prev.frontAxle, newTyresFitted: e.target.checked }
+                    }))}
+                    className="w-5 h-5 accent-green-500"
+                  />
+                </div>
+                
+                <div className="flex items-center justify-between p-3 bg-gray-900/50 border border-green-500/20 rounded">
+                  <span className="text-green-100">Tyre Sensor Check:</span>
+                  <input type="checkbox" className="w-5 h-5 accent-green-500" />
+                </div>
+                
+                <div className="flex items-center justify-between p-3 bg-gray-900/50 border border-green-500/20 rounded">
+                  <span className="text-green-100">Brake Rig Status:</span>
+                  <input type="checkbox" className="w-5 h-5 accent-green-500" />
+                </div>
+                
+                <div className="flex items-center justify-between p-3 bg-gray-900/50 border border-green-500/20 rounded">
+                  <span className="text-green-100">Wheel Alignment:</span>
+                  <input type="checkbox" className="w-5 h-5 accent-green-500" />
+                </div>
+              </div>
+            </div>
+
+            {/* Middle Column - Tyre Data */}
+            <div className="space-y-4">
+              <h3 className="text-green-400 font-semibold text-lg border-b border-green-500/30 pb-2">Tyre Data Collection:</h3>
+              
+              <div className="space-y-3">
+                <div className="p-3 bg-gray-900/50 border border-green-500/20 rounded">
+                  <label className="block text-green-100 text-sm mb-2">DOT Code:</label>
+                  <input 
+                    type="text"
+                    value={fitFinishData.frontAxle?.nsfront?.dot || ''}
+                    onChange={(e) => updateTyreData('frontAxle', 'nsfront', 'dot', e.target.value)}
+                    className="w-full bg-black border border-green-500/40 text-green-100 px-3 py-2 rounded focus:border-green-400"
+                    placeholder="Enter DOT code"
+                  />
+                </div>
+                
+                <div className="p-3 bg-gray-900/50 border border-green-500/20 rounded">
+                  <label className="block text-green-100 text-sm mb-2">Brand:</label>
+                  <input 
+                    type="text"
+                    value={fitFinishData.frontAxle?.nsfront?.brand || ''}
+                    onChange={(e) => updateTyreData('frontAxle', 'nsfront', 'brand', e.target.value)}
+                    className="w-full bg-black border border-green-500/40 text-green-100 px-3 py-2 rounded focus:border-green-400"
+                    placeholder="Enter brand"
+                  />
+                </div>
+                
+                <div className="p-3 bg-gray-900/50 border border-green-500/20 rounded">
+                  <label className="block text-green-100 text-sm mb-2">Tyre Pressure:</label>
+                  <input 
+                    type="text"
+                    value={fitFinishData.frontAxle?.nsfront?.tyrePressure || ''}
+                    onChange={(e) => updateTyreData('frontAxle', 'nsfront', 'tyrePressure', e.target.value)}
+                    className="w-full bg-black border border-green-500/40 text-green-100 px-3 py-2 rounded focus:border-green-400"
+                    placeholder="Enter pressure"
+                  />
+                </div>
+                
+                <div className="p-3 bg-gray-900/50 border border-green-500/20 rounded">
+                  <label className="block text-green-100 text-sm mb-2">Tyre Size:</label>
+                  <input 
+                    type="text"
+                    value={fitFinishData.frontAxle?.nsfront?.tyreSize || ''}
+                    onChange={(e) => updateTyreData('frontAxle', 'nsfront', 'tyreSize', e.target.value)}
+                    className="w-full bg-black border border-green-500/40 text-green-100 px-3 py-2 rounded focus:border-green-400"
+                    placeholder="Enter size"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Additional Data */}
+            <div className="space-y-4">
+              <h3 className="text-green-400 font-semibold text-lg border-b border-green-500/30 pb-2">Additional Data:</h3>
+              
+              <div className="space-y-3">
+                <div className="p-3 bg-gray-900/50 border border-green-500/20 rounded">
+                  <label className="block text-green-100 text-sm mb-2">Additional Work:</label>
+                  <textarea 
+                    value={fitFinishData.additionalWork || ''}
+                    onChange={(e) => setFitFinishData(prev => ({ ...prev, additionalWork: e.target.value }))}
+                    className="w-full bg-black border border-green-500/40 text-green-100 px-3 py-2 rounded focus:border-green-400 h-24 resize-none"
+                    placeholder="Enter additional work notes..."
+                  />
+                </div>
+                
+                <div className="p-3 bg-gray-900/50 border border-green-500/20 rounded">
+                  <label className="block text-green-100 text-sm mb-2">Technician Notes:</label>
+                  <textarea 
+                    className="w-full bg-black border border-green-500/40 text-green-100 px-3 py-2 rounded focus:border-green-400 h-24 resize-none"
+                    placeholder="Enter technician notes..."
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-center space-x-4 mt-8 pt-6 border-t border-green-500/30">
+            <TouchButton
+              variant="outline"
+              onClick={handleSave}
+              className="text-green-400 border-green-500/50 hover:border-green-400 px-8 py-3"
+            >
+              SAVE PROGRESS
+            </TouchButton>
+            <TouchButton
+              variant="primary"
+              onClick={handleComplete}
+              loading={completeMutation.isPending}
+              className="bg-green-600 hover:bg-green-700 border-green-500 px-8 py-3"
+            >
+              COMPLETE INSPECTION
+            </TouchButton>
+          </div>
+        </div>
       </div>
-    </ResponsiveLayout>
+    </div>
   );
 }
