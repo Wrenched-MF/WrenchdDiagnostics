@@ -5,11 +5,11 @@ import { TouchButton } from "@/components/tablet-touch";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, getQueryFn } from "@/lib/queryClient";
-import { ArrowLeft, Download, Mail, FileText, Eye } from "lucide-react";
+import { ArrowLeft, Download, Mail, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Report {
   id: string;
