@@ -295,6 +295,8 @@ export default function WheelsInspection() {
   // Mark task as completed in VHC
   const markVhcTaskCompleted = async (taskName: string) => {
     try {
+      console.log('Marking VHC task as completed:', taskName);
+      
       // Fetch current VHC data to get completed tasks
       const vhcResponse = await fetch(`/api/vhc/${jobId}`, {
         credentials: 'include'
@@ -302,14 +304,18 @@ export default function WheelsInspection() {
       
       if (vhcResponse.ok) {
         const vhcData = await vhcResponse.json();
+        console.log('Current VHC data:', vhcData);
+        
         const completedTasks = vhcData.completedTasks || [];
+        console.log('Current completed tasks:', completedTasks);
         
         // Add this task to completed tasks if not already present
         if (!completedTasks.includes(taskName)) {
           const updatedCompletedTasks = [...completedTasks, taskName];
+          console.log('Updated completed tasks:', updatedCompletedTasks);
           
           // Update VHC with new completed tasks
-          await apiRequest('POST', '/api/vhc', {
+          const updateResponse = await apiRequest('POST', '/api/vhc', {
             jobId,
             selectedTasks: vhcData.selectedTasks || [taskName],
             completedTasks: updatedCompletedTasks,
@@ -318,7 +324,19 @@ export default function WheelsInspection() {
             tpmsType: vhcData.tpmsType,
             currentStage: vhcData.currentStage || 'inspection'
           });
+          
+          const updatedVhcData = await updateResponse.json();
+          console.log('VHC update response:', updatedVhcData);
+          
+          // Invalidate VHC query to refresh data
+          queryClient.invalidateQueries({ queryKey: ['/api/vhc', jobId] });
+          
+          console.log('VHC task marked as completed successfully');
+        } else {
+          console.log('Task already completed:', taskName);
         }
+      } else {
+        console.error('Failed to fetch VHC data:', vhcResponse.status);
       }
     } catch (error) {
       console.error('Error marking VHC task as completed:', error);

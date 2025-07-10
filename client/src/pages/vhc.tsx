@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ArrowLeft, Save, CheckCircle, Wrench, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 
 interface VHCData {
@@ -43,6 +44,7 @@ export default function VHC() {
   const { jobId } = useParams();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   // Debug logging
   console.log('VHC component loaded', { jobId });
@@ -665,7 +667,7 @@ export default function VHC() {
                 <div className="absolute bottom-4 right-4">
                   <div className="bg-green-600/20 border border-green-500/30 rounded px-4 py-2">
                     <span className="text-white/80 text-sm">Technician: </span>
-                    <span className="text-white font-medium">{job?.customer?.name || 'Admin'}</span>
+                    <span className="text-white font-medium">{user?.username || 'Admin'}</span>
                   </div>
                 </div>
               </div>
