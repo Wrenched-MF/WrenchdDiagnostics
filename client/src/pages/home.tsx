@@ -186,7 +186,7 @@ export default function HomePage() {
                 <Button 
                   variant="outline" 
                   className="w-full border-white/20 text-white hover:bg-white hover:text-gray-900"
-                  onClick={() => alert('Reports functionality temporarily disabled for debugging')}
+                  onClick={() => navigate('/reports')}
                 >
                   View Reports
                 </Button>
