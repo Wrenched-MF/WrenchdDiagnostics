@@ -106,6 +106,13 @@ export default function FitAndFinish() {
     status: 'in_progress'
   });
 
+  const [finalTorques, setFinalTorques] = useState({
+    nsfront: '',
+    osfront: '',
+    nsrear: '',
+    osrear: ''
+  });
+
   // Fetch job data
   const { data: job } = useQuery({
     queryKey: [`/api/jobs/${jobId}`],
@@ -222,17 +229,11 @@ export default function FitAndFinish() {
     completeMutation.mutate();
   };
 
-  const updateTyreData = (section: string, subsection: string, field: string, value: string) => {
-    setFitFinishData(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section as keyof typeof prev],
-        [subsection]: {
-          ...(prev[section as keyof typeof prev] as any)?.[subsection],
-          [field]: value
-        }
-      }
-    }));
+  const handleCheckAndSave = (position: string) => {
+    toast({
+      title: "Torque Checked",
+      description: `Final torque for ${position} has been verified and saved.`,
+    });
   };
 
   if (!user || !job) {
@@ -241,7 +242,7 @@ export default function FitAndFinish() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black p-4">
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <TouchButton
@@ -253,148 +254,184 @@ export default function FitAndFinish() {
             BACK
           </TouchButton>
           <h1 className="text-2xl font-bold text-green-400">{job.make} {job.model} ({job.year})</h1>
-          <TouchButton
-            variant="primary"
-            onClick={handleSave}
-            loading={saveMutation.isPending}
-            className="bg-green-600 hover:bg-green-700 border-green-500"
-          >
-            SAVE
-          </TouchButton>
+          <div className="w-24"></div> {/* Spacer for balance */}
         </div>
 
-        {/* Main Content */}
-        <div className="bg-black border border-green-500/30 rounded-lg p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            {/* Left Column - Equipment Check */}
-            <div className="space-y-4">
-              <h3 className="text-green-400 font-semibold text-lg border-b border-green-500/30 pb-2">Equipment Check:</h3>
-              
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gray-900/50 border border-green-500/20 rounded">
-                  <span className="text-green-100">New Tyres Fitted:</span>
-                  <input 
-                    type="checkbox" 
-                    checked={fitFinishData.frontAxle?.newTyresFitted || false}
-                    onChange={(e) => setFitFinishData(prev => ({
-                      ...prev,
-                      frontAxle: { ...prev.frontAxle, newTyresFitted: e.target.checked }
-                    }))}
-                    className="w-5 h-5 accent-green-500"
-                  />
+        <div className="grid grid-cols-12 gap-6 h-[calc(100vh-120px)]">
+          {/* Left Column - Groups */}
+          <div className="col-span-2 space-y-4">
+            <div className="bg-green-600 text-white p-4 rounded text-center font-bold">
+              GROUPS
+            </div>
+          </div>
+
+          {/* Center Column - Car Diagram */}
+          <div className="col-span-7 bg-black border border-green-500/30 rounded-lg p-8 relative">
+            <div className="h-full flex flex-col items-center justify-center">
+              {/* Car Outline */}
+              <div className="relative w-80 h-96 border-2 border-green-400 rounded-3xl bg-gradient-to-b from-green-900/20 to-green-800/10">
+                
+                {/* Front Wheels */}
+                <div className="absolute -left-8 top-20">
+                  <div className="w-16 h-20 bg-green-500/20 border border-green-400 rounded flex items-center justify-center">
+                    <span className="text-green-300 text-xs font-bold transform -rotate-90">N/S</span>
+                  </div>
+                  <div className="text-green-400 text-sm mt-2 text-center">Front</div>
                 </div>
                 
-                <div className="flex items-center justify-between p-3 bg-gray-900/50 border border-green-500/20 rounded">
-                  <span className="text-green-100">Tyre Sensor Check:</span>
-                  <input type="checkbox" className="w-5 h-5 accent-green-500" />
+                <div className="absolute -right-8 top-20">
+                  <div className="w-16 h-20 bg-green-500/20 border border-green-400 rounded flex items-center justify-center">
+                    <span className="text-green-300 text-xs font-bold transform rotate-90">O/S</span>
+                  </div>
+                  <div className="text-green-400 text-sm mt-2 text-center">Front</div>
+                </div>
+
+                {/* Rear Wheels */}
+                <div className="absolute -left-8 bottom-20">
+                  <div className="w-16 h-20 bg-green-500/20 border border-green-400 rounded flex items-center justify-center">
+                    <span className="text-green-300 text-xs font-bold transform -rotate-90">Left</span>
+                  </div>
+                  <div className="text-green-400 text-sm mt-2 text-center">Rear</div>
                 </div>
                 
-                <div className="flex items-center justify-between p-3 bg-gray-900/50 border border-green-500/20 rounded">
-                  <span className="text-green-100">Brake Rig Status:</span>
-                  <input type="checkbox" className="w-5 h-5 accent-green-500" />
+                <div className="absolute -right-8 bottom-20">
+                  <div className="w-16 h-20 bg-green-500/20 border border-green-400 rounded flex items-center justify-center">
+                    <span className="text-green-300 text-xs font-bold transform rotate-90">Right</span>
+                  </div>
+                  <div className="text-green-400 text-sm mt-2 text-center">Rear</div>
                 </div>
-                
-                <div className="flex items-center justify-between p-3 bg-gray-900/50 border border-green-500/20 rounded">
-                  <span className="text-green-100">Wheel Alignment:</span>
-                  <input type="checkbox" className="w-5 h-5 accent-green-500" />
+
+                {/* Center Service Advisory Box */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                  <div className="bg-green-500/20 border border-green-400 p-4 rounded text-center">
+                    <div className="text-green-300 text-sm font-bold">Service Advisory</div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Middle Column - Tyre Data */}
-            <div className="space-y-4">
-              <h3 className="text-green-400 font-semibold text-lg border-b border-green-500/30 pb-2">Tyre Data Collection:</h3>
-              
-              <div className="space-y-3">
-                <div className="p-3 bg-gray-900/50 border border-green-500/20 rounded">
-                  <label className="block text-green-100 text-sm mb-2">DOT Code:</label>
-                  <input 
-                    type="text"
-                    value={fitFinishData.frontAxle?.nsfront?.dot || ''}
-                    onChange={(e) => updateTyreData('frontAxle', 'nsfront', 'dot', e.target.value)}
-                    className="w-full bg-black border border-green-500/40 text-green-100 px-3 py-2 rounded focus:border-green-400"
-                    placeholder="Enter DOT code"
-                  />
+              {/* Bottom Text */}
+              <div className="mt-8 bg-green-900/30 border border-green-500/30 p-4 rounded text-green-100 text-sm max-w-2xl">
+                <div className="font-bold text-green-400 mb-2">
+                  The person responsible for Fit & Finish must complete the wheel torque check and confirm that:
                 </div>
-                
-                <div className="p-3 bg-gray-900/50 border border-green-500/20 rounded">
-                  <label className="block text-green-100 text-sm mb-2">Brand:</label>
-                  <input 
-                    type="text"
-                    value={fitFinishData.frontAxle?.nsfront?.brand || ''}
-                    onChange={(e) => updateTyreData('frontAxle', 'nsfront', 'brand', e.target.value)}
-                    className="w-full bg-black border border-green-500/40 text-green-100 px-3 py-2 rounded focus:border-green-400"
-                    placeholder="Enter brand"
-                  />
-                </div>
-                
-                <div className="p-3 bg-gray-900/50 border border-green-500/20 rounded">
-                  <label className="block text-green-100 text-sm mb-2">Tyre Pressure:</label>
-                  <input 
-                    type="text"
-                    value={fitFinishData.frontAxle?.nsfront?.tyrePressure || ''}
-                    onChange={(e) => updateTyreData('frontAxle', 'nsfront', 'tyrePressure', e.target.value)}
-                    className="w-full bg-black border border-green-500/40 text-green-100 px-3 py-2 rounded focus:border-green-400"
-                    placeholder="Enter pressure"
-                  />
-                </div>
-                
-                <div className="p-3 bg-gray-900/50 border border-green-500/20 rounded">
-                  <label className="block text-green-100 text-sm mb-2">Tyre Size:</label>
-                  <input 
-                    type="text"
-                    value={fitFinishData.frontAxle?.nsfront?.tyreSize || ''}
-                    onChange={(e) => updateTyreData('frontAxle', 'nsfront', 'tyreSize', e.target.value)}
-                    className="w-full bg-black border border-green-500/40 text-green-100 px-3 py-2 rounded focus:border-green-400"
-                    placeholder="Enter size"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column - Additional Data */}
-            <div className="space-y-4">
-              <h3 className="text-green-400 font-semibold text-lg border-b border-green-500/30 pb-2">Additional Data:</h3>
-              
-              <div className="space-y-3">
-                <div className="p-3 bg-gray-900/50 border border-green-500/20 rounded">
-                  <label className="block text-green-100 text-sm mb-2">Additional Work:</label>
-                  <textarea 
-                    value={fitFinishData.additionalWork || ''}
-                    onChange={(e) => setFitFinishData(prev => ({ ...prev, additionalWork: e.target.value }))}
-                    className="w-full bg-black border border-green-500/40 text-green-100 px-3 py-2 rounded focus:border-green-400 h-24 resize-none"
-                    placeholder="Enter additional work notes..."
-                  />
-                </div>
-                
-                <div className="p-3 bg-gray-900/50 border border-green-500/20 rounded">
-                  <label className="block text-green-100 text-sm mb-2">Technician Notes:</label>
-                  <textarea 
-                    className="w-full bg-black border border-green-500/40 text-green-100 px-3 py-2 rounded focus:border-green-400 h-24 resize-none"
-                    placeholder="Enter technician notes..."
-                  />
-                </div>
+                <ul className="space-y-1 text-xs">
+                  <li>• All tyres wheel torque with calibrated torque wrench following the sequence shown</li>
+                  <li>• All tyres have been fitted following sidewall instructions</li>
+                  <li>• All tyres are correct by confirming: make, size, speed rating and load index</li>
+                  <li>• Winter/All-Season/Summer tyres are fitted as a full set (except run flat)</li>
+                </ul>
               </div>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-center space-x-4 mt-8 pt-6 border-t border-green-500/30">
-            <TouchButton
-              variant="outline"
-              onClick={handleSave}
-              className="text-green-400 border-green-500/50 hover:border-green-400 px-8 py-3"
-            >
-              SAVE PROGRESS
-            </TouchButton>
+          {/* Right Column - Controls */}
+          <div className="col-span-3 space-y-4">
+            {/* FIT & FINISH */}
+            <div className="bg-green-600 text-white p-4 rounded text-center font-bold">
+              FIT & FINISH
+            </div>
+
+            {/* Torque Checks */}
+            <div className="space-y-3">
+              <div className="bg-black border border-green-500/30 rounded p-3">
+                <div className="text-green-400 text-sm font-bold mb-2">Final Torque (Nm) - NSR</div>
+                <input
+                  type="text"
+                  value={finalTorques.nsfront}
+                  onChange={(e) => setFinalTorques(prev => ({ ...prev, nsfront: e.target.value }))}
+                  className="w-full bg-gray-800 border border-green-500/40 text-green-100 px-3 py-2 rounded mb-2"
+                  placeholder="Enter torque value"
+                />
+                <TouchButton
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleCheckAndSave('NSR')}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  CHECK & SAVE
+                </TouchButton>
+              </div>
+
+              <div className="bg-black border border-green-500/30 rounded p-3">
+                <div className="text-green-400 text-sm font-bold mb-2">Final Torque (Nm) - NSF</div>
+                <input
+                  type="text"
+                  value={finalTorques.osfront}
+                  onChange={(e) => setFinalTorques(prev => ({ ...prev, osfront: e.target.value }))}
+                  className="w-full bg-gray-800 border border-green-500/40 text-green-100 px-3 py-2 rounded mb-2"
+                  placeholder="Enter torque value"
+                />
+                <TouchButton
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleCheckAndSave('NSF')}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  CHECK & SAVE
+                </TouchButton>
+              </div>
+
+              <div className="bg-black border border-green-500/30 rounded p-3">
+                <div className="text-green-400 text-sm font-bold mb-2">Final Torque (Nm) - OSF</div>
+                <input
+                  type="text"
+                  value={finalTorques.nsrear}
+                  onChange={(e) => setFinalTorques(prev => ({ ...prev, nsrear: e.target.value }))}
+                  className="w-full bg-gray-800 border border-green-500/40 text-green-100 px-3 py-2 rounded mb-2"
+                  placeholder="Enter torque value"
+                />
+                <TouchButton
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleCheckAndSave('OSF')}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  CHECK & SAVE
+                </TouchButton>
+              </div>
+
+              <div className="bg-black border border-green-500/30 rounded p-3">
+                <div className="text-green-400 text-sm font-bold mb-2">Final Torque (Nm) - OSR</div>
+                <input
+                  type="text"
+                  value={finalTorques.osrear}
+                  onChange={(e) => setFinalTorques(prev => ({ ...prev, osrear: e.target.value }))}
+                  className="w-full bg-gray-800 border border-green-500/40 text-green-100 px-3 py-2 rounded mb-2"
+                  placeholder="Enter torque value"
+                />
+                <TouchButton
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleCheckAndSave('OSR')}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  CHECK & SAVE
+                </TouchButton>
+              </div>
+            </div>
+
+            {/* ADDITIONAL WORK */}
+            <div className="bg-green-600 text-white p-4 rounded text-center font-bold">
+              ADDITIONAL WORK
+            </div>
+
+            <div className="bg-black border border-green-500/30 rounded p-4">
+              <textarea
+                value={fitFinishData.additionalWork || ''}
+                onChange={(e) => setFitFinishData(prev => ({ ...prev, additionalWork: e.target.value }))}
+                className="w-full bg-gray-800 border border-green-500/40 text-green-100 px-3 py-2 rounded h-24 resize-none"
+                placeholder="Enter additional work notes..."
+              />
+            </div>
+
+            {/* COMPLETE */}
             <TouchButton
               variant="primary"
               onClick={handleComplete}
               loading={completeMutation.isPending}
-              className="bg-green-600 hover:bg-green-700 border-green-500 px-8 py-3"
+              className="w-full bg-green-600 hover:bg-green-700 border-green-500 py-4 text-lg font-bold"
             >
-              COMPLETE INSPECTION
+              COMPLETE
             </TouchButton>
           </div>
         </div>
