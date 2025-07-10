@@ -87,6 +87,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Report generation and management
+  app.post('/api/reports/generate/:jobId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { reportGenerator } = await import('./reportGenerator');
+      const userId = req.user?.id;
+      const { jobId } = req.params;
+
+      const pdfBuffer = await reportGenerator.generateReport(jobId, userId);
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="VHC-Report-${jobId}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating report:", error);
+      res.status(500).json({ message: "Failed to generate report" });
+    }
+  });
+
+  app.get('/api/reports/:reportId/download', isAuthenticated, async (req: any, res) => {
+    try {
+      const { reportId } = req.params;
+      const userId = req.user?.id;
+      
+      // Get report from database
+      const reports = await storage.getInspectionReportsByUserId(userId);
+      const report = reports.find(r => r.id === reportId);
+      
+      if (!report) {
+        return res.status(404).json({ message: "Report not found" });
+      }
+
+      // Regenerate PDF from stored data
+      const { reportGenerator } = await import('./reportGenerator');
+      const pdfBuffer = await reportGenerator.generateReport(report.jobId, userId);
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="VHC-Report-${report.reportNumber}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("Error downloading report:", error);
+      res.status(500).json({ message: "Failed to download report" });
+    }
+  });
+
+  app.post('/api/reports/:reportId/email', isAuthenticated, async (req: any, res) => {
+    try {
+      const { reportId } = req.params;
+      const { recipientEmail, subject, message } = req.body;
+      const userId = req.user?.id;
+      
+      // Get report from database
+      const reports = await storage.getInspectionReportsByUserId(userId);
+      const report = reports.find(r => r.id === reportId);
+      
+      if (!report) {
+        return res.status(404).json({ message: "Report not found" });
+      }
+
+      // Generate PDF
+      const { reportGenerator } = await import('./reportGenerator');
+      const pdfBuffer = await reportGenerator.generateReport(report.jobId, userId);
+      
+      // Send email (we'll implement this next)
+      const { emailService } = await import('./emailService');
+      await emailService.sendReportEmail({
+        to: recipientEmail,
+        subject: subject || `Vehicle Health Check Report - ${report.reportNumber}`,
+        message: message || 'Please find attached your vehicle health check report.',
+        reportBuffer: pdfBuffer,
+        reportFileName: `VHC-Report-${report.reportNumber}.pdf`
+      });
+
+      res.json({ message: "Report sent successfully" });
+    } catch (error) {
+      console.error("Error emailing report:", error);
+      res.status(500).json({ message: "Failed to send report" });
+    }
+  });
+
   // Enhanced job creation with vehicle and customer registry
   app.post('/api/jobs', isAuthenticated, async (req: any, res) => {
     try {
