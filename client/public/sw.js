@@ -75,40 +75,31 @@ self.addEventListener('fetch', event => {
   event.respondWith(handleStaticRequest(request));
 });
 
-// Cache-first strategy for API requests
+// Network-first strategy for API requests (better for authentication)
 async function handleApiRequest(request) {
   const cache = await caches.open(API_CACHE_NAME);
-  const cachedResponse = await cache.match(request);
-
+  
   try {
-    // Try to fetch from network
+    // Always try network first for API requests
     const networkResponse = await fetch(request);
     
+    // Cache successful responses (not auth failures)
     if (networkResponse.ok) {
-      // Cache successful responses
       cache.put(request, networkResponse.clone());
-      return networkResponse;
     }
     
-    // If network fails, return cached version
-    return cachedResponse || new Response(
-      JSON.stringify({ error: 'Network unavailable', offline: true }), 
-      { 
-        status: 503, 
-        headers: { 'Content-Type': 'application/json' } 
-      }
-    );
+    return networkResponse;
   } catch (error) {
-    console.log('Network request failed, serving from cache:', error);
+    console.log('Network request failed, checking cache:', error);
     
-    // Return cached response or offline fallback
-    return cachedResponse || new Response(
-      JSON.stringify({ error: 'Offline mode', offline: true }), 
-      { 
-        status: 503, 
-        headers: { 'Content-Type': 'application/json' } 
-      }
-    );
+    // Only serve from cache if network is completely unavailable
+    const cachedResponse = await cache.match(request);
+    if (cachedResponse && !navigator.onLine) {
+      return cachedResponse;
+    }
+    
+    // Let the network error pass through normally
+    throw error;
   }
 }
 
