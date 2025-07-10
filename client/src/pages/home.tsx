@@ -183,11 +183,7 @@ export default function HomePage() {
                 <p className="text-white/80 mb-4">
                   View and manage inspection reports
                 </p>
-                <Button 
-                  variant="outline" 
-                  className="w-full border-white/20 text-white hover:bg-white hover:text-gray-900"
-                  onClick={() => navigate('/reports')}
-                >
+                <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white hover:text-gray-900">
                   View Reports
                 </Button>
               </CardContent>

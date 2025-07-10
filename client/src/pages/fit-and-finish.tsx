@@ -1,6 +1,6 @@
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { TouchButton } from "@/components/tablet-touch";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -211,22 +211,12 @@ export default function FitAndFinish() {
         status: 'completed'
       });
       
-      // Generate comprehensive report
-      const reportResponse = await fetch(`/api/reports/generate/${jobId}`, {
-        method: 'POST',
-        credentials: 'include'
-      });
-      
-      if (!reportResponse.ok) {
-        throw new Error('Failed to generate report');
-      }
-      
       return data;
     },
     onSuccess: () => {
       toast({
-        title: "Job Complete!", 
-        description: "Professional report has been generated and saved to reports section.",
+        title: "Fit & Finish Complete", 
+        description: "Job has been marked as completed and all data saved.",
       });
       // Navigate to job management (home page)
       navigate('/');

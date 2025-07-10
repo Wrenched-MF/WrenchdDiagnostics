@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
+import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { queryClient, getQueryFn } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
-import { ErrorBoundary } from "@/components/error-boundary";
+// import { TooltipProvider } from "@/components/ui/tooltip";
+import { useState, useEffect } from "react";
 import LoadingPage from "@/pages/loading";
+import { ErrorBoundary } from "@/components/error-boundary";
 import HomePage from "@/pages/home";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AuthPage from "@/pages/auth-page";
@@ -22,39 +23,30 @@ import SummerChecks from "@/pages/summer-checks";
 import WinterChecks from "@/pages/winter-checks";
 import ServiceInspection from "@/pages/service-inspection";
 import FitAndFinish from "@/pages/fit-and-finish";
-import ReportsFixed from "@/pages/reports-fixed";
 import NotFound from "@/pages/not-found";
-
-function AuthWrapper() {
-  const [showLoading, setShowLoading] = useState(true);
-  
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowLoading(false);
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (showLoading) {
-    return <LoadingPage onComplete={() => setShowLoading(false)} />;
-  }
-
-  return <Router />;
-}
+import { getQueryFn } from "./lib/queryClient";
 
 function Router() {
+  const [showLoading, setShowLoading] = useState(true);
+  
   const { data: user, isLoading } = useQuery({
     queryKey: ["/api/user"],
     queryFn: getQueryFn({ on401: "returnNull" }),
     retry: false,
   });
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full" />
-      </div>
-    );
+  useEffect(() => {
+    // Show loading screen for at least 3 seconds on initial load
+    const timer = setTimeout(() => {
+      setShowLoading(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Show loading screen if auth is loading or during initial app load
+  if (isLoading || showLoading) {
+    return <LoadingPage onComplete={() => setShowLoading(false)} />;
   }
 
   const isAuthenticated = !!user;
@@ -84,7 +76,6 @@ function Router() {
           <Route path="/winter-checks/:jobId" component={WinterChecks} />
           <Route path="/service-inspection/:jobId" component={ServiceInspection} />
           <Route path="/fit-and-finish/:jobId" component={FitAndFinish} />
-          <Route path="/reports" component={ReportsFixed} />
         </>
       ) : (
         <Route path="/" component={AuthPage} />
@@ -98,7 +89,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AuthWrapper />
+        <Router />
         <Toaster />
       </QueryClientProvider>
     </ErrorBoundary>
