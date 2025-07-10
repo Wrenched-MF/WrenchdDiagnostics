@@ -152,6 +152,18 @@ export const inspectionReports = pgTable("inspection_reports", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const fitAndFinishData = pgTable("fit_and_finish_data", {
+  id: text("id").primaryKey().$defaultFn(() => `ff_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`),
+  jobId: text("job_id").notNull(),
+  frontAxle: text("front_axle").notNull(), // JSON string
+  rearAxle: text("rear_axle").notNull(), // JSON string
+  spare: text("spare").notNull(), // JSON string
+  additionalWork: text("additional_work"),
+  status: text("status").notNull().default("in_progress"), // in_progress, completed
+  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+  updatedAt: text("updated_at").notNull().$defaultFn(() => new Date().toISOString()),
+});
+
 export type InsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 
@@ -178,6 +190,9 @@ export type VhcData = typeof vhcData.$inferSelect;
 
 export type InsertInspectionReport = typeof inspectionReports.$inferInsert;
 export type InspectionReport = typeof inspectionReports.$inferSelect;
+
+export type InsertFitAndFinishData = typeof fitAndFinishData.$inferInsert;
+export type FitAndFinishData = typeof fitAndFinishData.$inferSelect;
 
 // Schema validations
 export const insertUserSchema = createInsertSchema(users).pick({

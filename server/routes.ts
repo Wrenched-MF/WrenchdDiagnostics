@@ -646,6 +646,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Fit and Finish routes
+  app.post("/api/fit-finish", isAuthenticated, async (req, res) => {
+    try {
+      const fitFinishData = await storage.createFitAndFinishData({
+        ...req.body,
+        frontAxle: JSON.stringify(req.body.frontAxle || {}),
+        rearAxle: JSON.stringify(req.body.rearAxle || {}),
+        spare: JSON.stringify(req.body.spare || {}),
+      });
+      res.json(fitFinishData);
+    } catch (error) {
+      console.error("Error creating fit and finish data:", error);
+      res.status(500).json({ error: "Failed to create fit and finish data" });
+    }
+  });
+
+  app.get("/api/fit-finish/:jobId", isAuthenticated, async (req, res) => {
+    try {
+      const fitFinishData = await storage.getFitAndFinishDataByJobId(req.params.jobId);
+      if (!fitFinishData) {
+        return res.status(404).json({ error: "Fit and finish data not found" });
+      }
+      
+      // Parse JSON fields
+      const parsedData = {
+        ...fitFinishData,
+        frontAxle: JSON.parse(fitFinishData.frontAxle),
+        rearAxle: JSON.parse(fitFinishData.rearAxle),
+        spare: JSON.parse(fitFinishData.spare),
+      };
+      
+      res.json(parsedData);
+    } catch (error) {
+      console.error("Error fetching fit and finish data:", error);
+      res.status(500).json({ error: "Failed to fetch fit and finish data" });
+    }
+  });
+
+  app.patch("/api/fit-finish/:id", isAuthenticated, async (req, res) => {
+    try {
+      const updateData: any = { ...req.body };
+      
+      // Stringify JSON fields if they exist
+      if (req.body.frontAxle) updateData.frontAxle = JSON.stringify(req.body.frontAxle);
+      if (req.body.rearAxle) updateData.rearAxle = JSON.stringify(req.body.rearAxle);
+      if (req.body.spare) updateData.spare = JSON.stringify(req.body.spare);
+      
+      const fitFinishData = await storage.updateFitAndFinishData(req.params.id, updateData);
+      res.json(fitFinishData);
+    } catch (error) {
+      console.error("Error updating fit and finish data:", error);
+      res.status(500).json({ error: "Failed to update fit and finish data" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
