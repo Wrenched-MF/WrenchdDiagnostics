@@ -9,6 +9,7 @@ import {
   vhcData,
   inspectionReports,
   fitAndFinishData,
+  passwordResets,
   type User,
   type InsertUser,
   type Subscription,
@@ -29,6 +30,8 @@ import {
   type InsertInspectionReport,
   type FitAndFinishData,
   type InsertFitAndFinishData,
+  type PasswordReset,
+  type InsertPasswordReset,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, ilike } from "drizzle-orm";
@@ -38,7 +41,9 @@ export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserPassword(userId: string, hashedPassword: string): Promise<User>;
   
   // Admin user management
   getAllUsers(): Promise<User[]>;
@@ -94,6 +99,12 @@ export interface IStorage {
   createFitAndFinishData(data: Omit<InsertFitAndFinishData, 'id'>): Promise<FitAndFinishData>;
   getFitAndFinishDataByJobId(jobId: string): Promise<FitAndFinishData | undefined>;
   updateFitAndFinishData(id: string, data: Partial<FitAndFinishData>): Promise<FitAndFinishData>;
+
+  // Password reset management
+  createPasswordReset(passwordReset: InsertPasswordReset): Promise<PasswordReset>;
+  getPasswordResetByToken(token: string): Promise<PasswordReset | undefined>;
+  markPasswordResetAsUsed(token: string): Promise<void>;
+  cleanupExpiredPasswordResets(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -250,6 +261,24 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async updateUserPassword(userId: string, hashedPassword: string): Promise<User> {
+    const [user] = await db.update(users)
+      .set({ password: hashedPassword, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!user) {
+      throw new Error('User not found');
+    }
+    
     return user;
   }
 
@@ -503,6 +532,45 @@ export class DatabaseStorage implements IStorage {
     }
 
     return updated;
+  }
+
+  // Password reset management
+  async createPasswordReset(passwordReset: InsertPasswordReset): Promise<PasswordReset> {
+    const [created] = await db
+      .insert(passwordResets)
+      .values(passwordReset)
+      .returning();
+
+    if (!created) {
+      throw new Error('Failed to create password reset');
+    }
+
+    return created;
+  }
+
+  async getPasswordResetByToken(token: string): Promise<PasswordReset | undefined> {
+    const [reset] = await db
+      .select()
+      .from(passwordResets)
+      .where(eq(passwordResets.token, token))
+      .limit(1);
+
+    return reset;
+  }
+
+  async markPasswordResetAsUsed(token: string): Promise<void> {
+    await db
+      .update(passwordResets)
+      .set({ used: true })
+      .where(eq(passwordResets.token, token));
+  }
+
+  async cleanupExpiredPasswordResets(): Promise<void> {
+    await db
+      .delete(passwordResets)
+      .where(and(
+        eq(passwordResets.used, true)
+      ));
   }
 }
 
