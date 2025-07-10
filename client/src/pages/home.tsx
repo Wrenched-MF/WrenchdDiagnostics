@@ -8,6 +8,7 @@ import { Link, useLocation } from "wouter";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel, DropdownMenuGroup } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import wrenchdLogo from "@assets/wrenchd_ivhc_icon_512x512_1752010342000.png";
+import { OfflineIndicator } from "@/components/offline-indicator";
 
 export default function HomePage() {
   const { toast } = useToast();
@@ -65,6 +66,9 @@ export default function HomePage() {
               <h1 className="text-xl font-bold text-white">Wrench'd IVHC</h1>
             </div>
             <div className="flex items-center space-x-4">
+              {/* Offline Status Indicator */}
+              <OfflineIndicator />
+              
               {/* Profile Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

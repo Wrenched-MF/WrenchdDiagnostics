@@ -25,6 +25,8 @@ import ServiceInspection from "@/pages/service-inspection";
 import FitAndFinish from "@/pages/fit-and-finish";
 import NotFound from "@/pages/not-found";
 import { getQueryFn } from "./lib/queryClient";
+import { OfflineBanner } from "@/components/offline-indicator";
+import { offlineStorage } from "./lib/offline-storage";
 
 function Router() {
   const [showLoading, setShowLoading] = useState(true);
@@ -86,9 +88,17 @@ function Router() {
 }
 
 export default function App() {
+  // Initialize offline storage on app start
+  useEffect(() => {
+    offlineStorage.init().catch(error => {
+      console.error('Failed to initialize offline storage:', error);
+    });
+  }, []);
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
+        <OfflineBanner />
         <Router />
         <Toaster />
       </QueryClientProvider>
