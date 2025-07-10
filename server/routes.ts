@@ -2,8 +2,10 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
-import { updateUserRoleSchema, updateSubscriptionStatusSchema } from "@shared/schema";
+import { updateUserRoleSchema, updateSubscriptionStatusSchema, forgotPasswordSchema, resetPasswordSchema } from "@shared/schema";
 import { z } from "zod";
+import crypto from "crypto";
+import bcrypt from "bcrypt";
 
 // Admin middleware to check if user has admin role
 const isAdmin = async (req: any, res: any, next: any) => {
@@ -24,6 +26,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);
 
   // Auth routes are now handled in auth.ts
+
+  // Password reset routes
+  app.post('/api/auth/forgot-password', async (req, res) => {
+    try {
+      const { email } = forgotPasswordSchema.parse(req.body);
+      
+      // Check if user exists
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        // Don't reveal if email exists for security
+        return res.json({ message: "If an account with this email exists, a password reset link has been sent." });
+      }
+
+      // Generate secure reset token
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+      // Store reset token
+      await storage.createPasswordReset({
+        id: `reset_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        email,
+        token: resetToken,
+        expiresAt,
+        used: false
+      });
+
+      // For now, just return the token (in a real app, you'd send an email)
+      // TODO: Integrate with email service
+      console.log(`Password reset token for ${email}: ${resetToken}`);
+      
+      res.json({ 
+        message: "If an account with this email exists, a password reset link has been sent.",
+        // Remove this in production - only for testing
+        resetToken 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid email address" });
+      }
+      console.error("Error in forgot password:", error);
+      res.status(500).json({ message: "Something went wrong. Please try again." });
+    }
+  });
+
+  app.post('/api/auth/reset-password', async (req, res) => {
+    try {
+      const { token, password, confirmPassword } = resetPasswordSchema.parse(req.body);
+      
+      // Find the reset token
+      const passwordReset = await storage.getPasswordResetByToken(token);
+      
+      if (!passwordReset || passwordReset.used || new Date() > passwordReset.expiresAt) {
+        return res.status(400).json({ message: "Invalid or expired reset token" });
+      }
+
+      // Get the user
+      const user = await storage.getUserByEmail(passwordReset.email);
+      if (!user) {
+        return res.status(400).json({ message: "User not found" });
+      }
+
+      // Hash the new password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Update user password
+      await storage.updateUserPassword(user.id, hashedPassword);
+
+      // Mark reset token as used
+      await storage.markPasswordResetAsUsed(token);
+
+      res.json({ message: "Password has been reset successfully" });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      console.error("Error in reset password:", error);
+      res.status(500).json({ message: "Something went wrong. Please try again." });
+    }
+  });
 
   // Admin routes
   app.get('/api/admin/users', isAuthenticated, isAdmin, async (req, res) => {

@@ -44,6 +44,16 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Password reset tokens table
+export const passwordResets = pgTable("password_resets", {
+  id: varchar("id").primaryKey().notNull(),
+  email: varchar("email").notNull(),
+  token: varchar("token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Subscription management table
 export const subscriptions = pgTable("subscriptions", {
   id: varchar("id").primaryKey(),
@@ -167,6 +177,9 @@ export const fitAndFinishData = pgTable("fit_and_finish_data", {
 export type InsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 
+export type InsertPasswordReset = typeof passwordResets.$inferInsert;
+export type PasswordReset = typeof passwordResets.$inferSelect;
+
 export type InsertSubscription = typeof subscriptions.$inferInsert;
 export type Subscription = typeof subscriptions.$inferSelect;
 
@@ -212,4 +225,17 @@ export const updateUserRoleSchema = z.object({
 export const updateSubscriptionStatusSchema = z.object({
   userId: z.string(),
   status: z.enum(["active", "inactive", "expired", "paused"]),
+});
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, "Reset token is required"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
