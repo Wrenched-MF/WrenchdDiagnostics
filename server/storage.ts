@@ -8,6 +8,7 @@ import {
   preInspections,
   vhcData,
   inspectionReports,
+  fitAndFinishData,
   type User,
   type InsertUser,
   type Subscription,
@@ -26,6 +27,8 @@ import {
   type InsertVhcData,
   type InspectionReport,
   type InsertInspectionReport,
+  type FitAndFinishData,
+  type InsertFitAndFinishData,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, ilike } from "drizzle-orm";
@@ -86,6 +89,11 @@ export interface IStorage {
   createInspectionReport(report: InsertInspectionReport): Promise<InspectionReport>;
   getInspectionReportsByUserId(userId: string): Promise<InspectionReport[]>;
   updateInspectionReport(id: string, data: Partial<InspectionReport>): Promise<InspectionReport>;
+
+  // Fit and Finish management
+  createFitAndFinishData(data: Omit<InsertFitAndFinishData, 'id'>): Promise<FitAndFinishData>;
+  getFitAndFinishDataByJobId(jobId: string): Promise<FitAndFinishData | undefined>;
+  updateFitAndFinishData(id: string, data: Partial<FitAndFinishData>): Promise<FitAndFinishData>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -458,6 +466,43 @@ export class DatabaseStorage implements IStorage {
       .where(eq(inspectionReports.id, id))
       .returning();
     return report;
+  }
+
+  async createFitAndFinishData(data: Omit<InsertFitAndFinishData, 'id'>): Promise<FitAndFinishData> {
+    const [created] = await db
+      .insert(fitAndFinishData)
+      .values(data)
+      .returning();
+
+    if (!created) {
+      throw new Error('Failed to create fit and finish data');
+    }
+
+    return created;
+  }
+
+  async getFitAndFinishDataByJobId(jobId: string): Promise<FitAndFinishData | undefined> {
+    const [data] = await db
+      .select()
+      .from(fitAndFinishData)
+      .where(eq(fitAndFinishData.jobId, jobId))
+      .limit(1);
+
+    return data;
+  }
+
+  async updateFitAndFinishData(id: string, data: Partial<FitAndFinishData>): Promise<FitAndFinishData> {
+    const [updated] = await db
+      .update(fitAndFinishData)
+      .set({ ...data, updatedAt: new Date().toISOString() })
+      .where(eq(fitAndFinishData.id, id))
+      .returning();
+
+    if (!updated) {
+      throw new Error(`Fit and finish data with id ${id} not found`);
+    }
+
+    return updated;
   }
 }
 

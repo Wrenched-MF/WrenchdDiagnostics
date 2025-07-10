@@ -22,6 +22,7 @@ import AirConditioningInspection from "@/pages/air-conditioning-inspection";
 import SummerChecks from "@/pages/summer-checks";
 import WinterChecks from "@/pages/winter-checks";
 import ServiceInspection from "@/pages/service-inspection";
+import FitAndFinish from "@/pages/fit-and-finish";
 import NotFound from "@/pages/not-found";
 import { getQueryFn } from "./lib/queryClient";
 
@@ -74,6 +75,7 @@ function Router() {
           <Route path="/summer-checks/:jobId" component={SummerChecks} />
           <Route path="/winter-checks/:jobId" component={WinterChecks} />
           <Route path="/service-inspection/:jobId" component={ServiceInspection} />
+          <Route path="/fit-and-finish/:jobId" component={FitAndFinish} />
         </>
       ) : (
         <Route path="/" component={AuthPage} />
