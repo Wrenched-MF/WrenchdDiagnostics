@@ -7,8 +7,6 @@ import { Car, Clock, CheckCircle, AlertCircle, Plus, Eye, Calendar, TrendingUp, 
 import { format } from "date-fns";
 import { Link } from "wouter";
 import { LoadingSkeleton } from "@/components/loading-skeleton";
-import { ResponsiveLayout, PageHeader, GridLayout } from "@/components/responsive-layout";
-import { EnhancedCard, StatCard } from "@/components/enhanced-card";
 
 interface Job {
   id: string;
@@ -98,103 +96,134 @@ export default function InspectionDashboard() {
 
   if (jobsLoading) {
     return (
-      <ResponsiveLayout>
-        <LoadingSkeleton variant="dashboard" />
-      </ResponsiveLayout>
+      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-green-900 p-6">
+        <div className="max-w-7xl mx-auto">
+          <LoadingSkeleton variant="dashboard" />
+        </div>
+      </div>
     );
   }
 
   return (
-    <ResponsiveLayout>
-      <div className="space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-green-900 p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <PageHeader
-          title="Inspection Dashboard"
-          subtitle={`Welcome back, ${user.username}. Here's your inspection overview.`}
-          icon={<Activity className="w-6 h-6 text-green-400" />}
-          actions={
-            <Link href="/create-job">
-              <Button className="bg-green-600 hover:bg-green-700 text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                New Inspection
-              </Button>
-            </Link>
-          }
-        />
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-bold text-white">
+            Inspection Dashboard
+          </h1>
+          <p className="text-white/70 text-lg">
+            Welcome back, {user.username}. Here's your inspection overview.
+          </p>
+        </div>
 
         {/* Stats Grid */}
-        <GridLayout columns={4}>
-          <StatCard
-            title="Total Jobs"
-            value={stats.totalJobs}
-            description={`${stats.totalJobs === 1 ? 'inspection' : 'inspections'} total`}
-            icon={<Activity className="h-4 w-4" />}
-            color="blue"
-            loading={jobsLoading}
-          />
-          <StatCard
-            title="Completed"
-            value={stats.completedJobs}
-            description={`${stats.totalJobs > 0 ? Math.round((stats.completedJobs / stats.totalJobs) * 100) : 0}% completion rate`}
-            icon={<CheckCircle className="h-4 w-4" />}
-            color="green"
-            loading={jobsLoading}
-          />
-          <StatCard
-            title="In Progress"
-            value={stats.inProgressJobs}
-            description="currently active"
-            icon={<Clock className="h-4 w-4" />}
-            color="yellow"
-            loading={jobsLoading}
-          />
-          <StatCard
-            title="Pending"
-            value={stats.pendingJobs}
-            description="awaiting start"
-            icon={<AlertCircle className="h-4 w-4" />}
-            color="orange"
-            loading={jobsLoading}
-          />
-        </GridLayout>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 border-blue-500/30 backdrop-blur-sm hover:scale-105 transition-transform duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">
+                Total Jobs
+              </CardTitle>
+              <Activity className="h-4 w-4 text-blue-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{stats.totalJobs}</div>
+              <p className="text-xs text-white/60">
+                {stats.totalJobs === 1 ? 'inspection' : 'inspections'} completed
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-green-600/20 to-green-800/20 border-green-500/30 backdrop-blur-sm hover:scale-105 transition-transform duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">
+                Completed
+              </CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{stats.completedJobs}</div>
+              <p className="text-xs text-white/60">
+                {stats.totalJobs > 0 ? Math.round((stats.completedJobs / stats.totalJobs) * 100) : 0}% completion rate
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-yellow-600/20 to-yellow-800/20 border-yellow-500/30 backdrop-blur-sm hover:scale-105 transition-transform duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">
+                In Progress
+              </CardTitle>
+              <Clock className="h-4 w-4 text-yellow-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{stats.inProgressJobs}</div>
+              <p className="text-xs text-white/60">
+                currently active
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-orange-600/20 to-orange-800/20 border-orange-500/30 backdrop-blur-sm hover:scale-105 transition-transform duration-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">
+                Pending
+              </CardTitle>
+              <AlertCircle className="h-4 w-4 text-orange-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{stats.pendingJobs}</div>
+              <p className="text-xs text-white/60">
+                awaiting start
+              </p>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Quick Actions */}
-        <EnhancedCard
-          title="Quick Actions"
-          icon={<TrendingUp className="w-5 h-5 text-green-400" />}
-          variant="glass"
-        >
-          <GridLayout columns={3}>
-            <Link href="/create-job">
-              <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                New Inspection
-              </Button>
-            </Link>
-            <Link href="/dashboard">
-              <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10">
-                <Eye className="w-4 h-4 mr-2" />
-                View All Jobs
-              </Button>
-            </Link>
-            <Link href="/reports">
-              <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10">
-                <Calendar className="w-4 h-4 mr-2" />
-                View Reports
-              </Button>
-            </Link>
-          </GridLayout>
-        </EnhancedCard>
+        <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center">
+              <TrendingUp className="w-5 h-5 mr-2 text-green-400" />
+              Quick Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Link href="/create-job">
+                <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Inspection
+                </Button>
+              </Link>
+              <Link href="/dashboard">
+                <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10">
+                  <Eye className="w-4 h-4 mr-2" />
+                  View All Jobs
+                </Button>
+              </Link>
+              <Link href="/reports">
+                <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  View Reports
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Recent Inspections */}
-        <EnhancedCard
-          title="Recent Inspections"
-          description="Your latest vehicle inspection jobs"
-          icon={<Clock className="w-5 h-5 text-green-400" />}
-          variant="gradient"
-          loading={jobsLoading}
-        >
-          <div className="space-y-4">
+        <Card className="bg-white/10 border-white/20 backdrop-blur-sm">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center">
+              <Clock className="w-5 h-5 mr-2 text-green-400" />
+              Recent Inspections
+            </CardTitle>
+            <CardDescription className="text-white/70">
+              Your latest vehicle inspection jobs
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
             {jobs.length === 0 ? (
               <div className="text-center py-12">
                 <Car className="w-16 h-16 text-white/30 mx-auto mb-4" />
@@ -243,9 +272,9 @@ export default function InspectionDashboard() {
                 </div>
               ))
             )}
-          </div>
-        </EnhancedCard>
+          </CardContent>
+        </Card>
       </div>
-    </ResponsiveLayout>
+    </div>
   );
 }
