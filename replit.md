@@ -4,7 +4,7 @@
 
 This is a full-stack web application for Wrench'd IVHC (Independent Vehicle Health Check), built with a modern React frontend and Express.js backend. The application provides professional vehicle inspection services optimized for tablet use by mechanics, featuring user authentication, subscription management, and comprehensive admin capabilities.
 
-**Current Status**: Complete job management system implemented with real DVLA API integration for vehicle registration lookup, UK postcode validation, comprehensive workflow tracking from vehicle lookup to customer data collection, and PWA capability with app icons for tablet installation. Authentication issues resolved - all API endpoints now work properly with session-based authentication. VHC inspection system fully implemented with 8 comprehensive inspection categories: wheels/tyres, brake inspection, exhaust inspection, air conditioning, summer checks, winter checks, service inspection, and **Fit & Finish inspection**. Each inspection page includes real automotive data collection with automatic condition assessment (pass/advisory/fail) and detailed technical forms optimized for tablet use. **Fit & Finish inspection system complete** - comprehensive tire data collection forms with front axle, rear axle, and spare tire sections, DOT codes, brands, brake rig status, tire pressure, and tire sizes matching user's visual specifications, fully integrated with VHC task completion tracking. **Task completion tracking system fully functional** - completed inspection tasks remain in checklist with green checkmarks, completion status persists in database across sessions. **Complete VHC functionality working** - "Complete VHC" button appears when all tasks finished, properly updates job status to "vhc_completed" and returns to job card.
+**Current Status**: Complete job management system implemented with real DVLA API integration for vehicle registration lookup, UK postcode validation, comprehensive workflow tracking from vehicle lookup to customer data collection, and PWA capability with app icons for tablet installation. Authentication issues resolved - all API endpoints now work properly with session-based authentication. VHC inspection system fully implemented with 8 comprehensive inspection categories: wheels/tyres, brake inspection, exhaust inspection, air conditioning, summer checks, winter checks, service inspection, and **Fit & Finish inspection**. Each inspection page includes real automotive data collection with automatic condition assessment (pass/advisory/fail) and detailed technical forms optimized for tablet use. **Fit & Finish inspection system complete** - comprehensive tire data collection forms with front axle, rear axle, and spare tire sections, DOT codes, brands, brake rig status, tire pressure, and tire sizes matching user's visual specifications, fully integrated with VHC task completion tracking. **Task completion tracking system fully functional** - completed inspection tasks remain in checklist with green checkmarks, completion status persists in database across sessions. **Complete VHC functionality working** - "Complete VHC" button appears when all tasks finished, properly updates job status to "vhc_completed" and returns to job card. **FULL OFFLINE FUNCTIONALITY IMPLEMENTED** - comprehensive Progressive Web App (PWA) with offline-first architecture, IndexedDB storage, background sync, service worker caching, and offline indicators for complete functionality without internet connection.
 
 ## User Preferences
 
@@ -103,6 +103,13 @@ This is a full-stack web application for Wrench'd IVHC (Independent Vehicle Heal
 - **@neondatabase/serverless**: Neon database client with WebSocket support
 - **connect-pg-simple**: PostgreSQL session store
 - **memoizee**: Function memoization for performance
+
+### Offline/PWA Features
+- **Service Worker**: Advanced caching strategies with cache-first API requests and network-first static assets
+- **IndexedDB Storage**: Comprehensive offline data storage with automatic sync when online
+- **Background Sync**: Queues operations when offline and syncs when connectivity returns
+- **Offline Indicators**: Real-time online/offline status display throughout the application
+- **PWA Manifest**: Full Progressive Web App support with app installation and tablet optimization
 
 ## Deployment Strategy
 
