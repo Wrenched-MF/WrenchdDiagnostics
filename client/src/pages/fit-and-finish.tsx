@@ -257,60 +257,68 @@ export default function FitAndFinish() {
           <div className="w-24"></div> {/* Spacer for balance */}
         </div>
 
-        <div className="grid grid-cols-12 gap-6 h-[calc(100vh-120px)]">
-          {/* Left Column - Groups */}
-          <div className="col-span-2 space-y-4">
-            <div className="bg-green-600 text-white p-4 rounded text-center font-bold">
-              GROUPS
-            </div>
-          </div>
-
+        <div className="grid grid-cols-10 gap-6 h-[calc(100vh-120px)]">
           {/* Center Column - Car Diagram */}
           <div className="col-span-7 bg-black border border-green-500/30 rounded-lg p-8 relative">
             <div className="h-full flex flex-col items-center justify-center">
-              {/* Car Outline */}
-              <div className="relative w-80 h-96 border-2 border-green-400 rounded-3xl bg-gradient-to-b from-green-900/20 to-green-800/10">
+              {/* Car Diagram with Wheel Position Boxes */}
+              <div className="relative flex items-center justify-center">
                 
-                {/* Front Wheels */}
-                <div className="absolute -left-8 top-20">
-                  <div className="w-16 h-20 bg-green-500/20 border border-green-400 rounded flex items-center justify-center">
-                    <span className="text-green-300 text-xs font-bold transform -rotate-90">N/S</span>
+                {/* NSF Box */}
+                <div className="absolute -left-32 -top-16">
+                  <div className="w-24 h-24 bg-black border-2 border-green-400 rounded-lg flex items-center justify-center">
+                    <span className="text-green-300 text-lg font-bold">NSF</span>
                   </div>
-                  <div className="text-green-400 text-sm mt-2 text-center">Front</div>
-                </div>
-                
-                <div className="absolute -right-8 top-20">
-                  <div className="w-16 h-20 bg-green-500/20 border border-green-400 rounded flex items-center justify-center">
-                    <span className="text-green-300 text-xs font-bold transform rotate-90">O/S</span>
-                  </div>
-                  <div className="text-green-400 text-sm mt-2 text-center">Front</div>
                 </div>
 
-                {/* Rear Wheels */}
-                <div className="absolute -left-8 bottom-20">
-                  <div className="w-16 h-20 bg-green-500/20 border border-green-400 rounded flex items-center justify-center">
-                    <span className="text-green-300 text-xs font-bold transform -rotate-90">Left</span>
+                {/* OSF Box */}
+                <div className="absolute -right-32 -top-16">
+                  <div className="w-24 h-24 bg-black border-2 border-green-400 rounded-lg flex items-center justify-center">
+                    <span className="text-green-300 text-lg font-bold">OSF</span>
                   </div>
-                  <div className="text-green-400 text-sm mt-2 text-center">Rear</div>
-                </div>
-                
-                <div className="absolute -right-8 bottom-20">
-                  <div className="w-16 h-20 bg-green-500/20 border border-green-400 rounded flex items-center justify-center">
-                    <span className="text-green-300 text-xs font-bold transform rotate-90">Right</span>
-                  </div>
-                  <div className="text-green-400 text-sm mt-2 text-center">Rear</div>
                 </div>
 
-                {/* Center Service Advisory Box */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                  <div className="bg-green-500/20 border border-green-400 p-4 rounded text-center">
-                    <div className="text-green-300 text-sm font-bold">Service Advisory</div>
+                {/* Car Body - using SVG-like styling to match the diagram */}
+                <div className="relative w-48 h-80 bg-gradient-to-b from-green-900/40 to-green-800/20 border-2 border-green-400 rounded-3xl">
+                  
+                  {/* Front Wheels - Hatched Pattern Representation */}
+                  <div className="absolute -left-4 top-8 w-8 h-12 bg-green-500/30 border border-green-400 rounded" 
+                       style={{backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(34, 197, 94, 0.3) 2px, rgba(34, 197, 94, 0.3) 4px)'}}>
+                  </div>
+                  <div className="absolute -right-4 top-8 w-8 h-12 bg-green-500/30 border border-green-400 rounded" 
+                       style={{backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(34, 197, 94, 0.3) 2px, rgba(34, 197, 94, 0.3) 4px)'}}>
+                  </div>
+
+                  {/* Rear Wheels - Hatched Pattern Representation */}
+                  <div className="absolute -left-4 bottom-8 w-8 h-12 bg-green-500/30 border border-green-400 rounded" 
+                       style={{backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(34, 197, 94, 0.3) 2px, rgba(34, 197, 94, 0.3) 4px)'}}>
+                  </div>
+                  <div className="absolute -right-4 bottom-8 w-8 h-12 bg-green-500/30 border border-green-400 rounded" 
+                       style={{backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(34, 197, 94, 0.3) 2px, rgba(34, 197, 94, 0.3) 4px)'}}>
+                  </div>
+
+                  {/* Car Details */}
+                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-16 h-8 bg-green-500/20 border border-green-400 rounded"></div>
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-20 h-6 bg-green-500/20 border border-green-400 rounded"></div>
+                </div>
+
+                {/* NSR Box */}
+                <div className="absolute -left-32 top-16">
+                  <div className="w-24 h-24 bg-black border-2 border-green-400 rounded-lg flex items-center justify-center">
+                    <span className="text-green-300 text-lg font-bold">NSR</span>
+                  </div>
+                </div>
+
+                {/* OSR Box */}
+                <div className="absolute -right-32 top-16">
+                  <div className="w-24 h-24 bg-black border-2 border-green-400 rounded-lg flex items-center justify-center">
+                    <span className="text-green-300 text-lg font-bold">OSR</span>
                   </div>
                 </div>
               </div>
 
               {/* Bottom Text */}
-              <div className="mt-8 bg-green-900/30 border border-green-500/30 p-4 rounded text-green-100 text-sm max-w-2xl">
+              <div className="mt-12 bg-green-900/30 border border-green-500/30 p-4 rounded text-green-100 text-sm max-w-2xl">
                 <div className="font-bold text-green-400 mb-2">
                   The person responsible for Fit & Finish must complete the wheel torque check and confirm that:
                 </div>
