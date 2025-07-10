@@ -1,6 +1,6 @@
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { TouchButton } from "@/components/tablet-touch";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";

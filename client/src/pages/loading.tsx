@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Wrench, Settings, Database, Camera, FileText } from "lucide-react";
 import wrenchdLogo from "@assets/wrenchd_ivhc_icon_512x512_1752010342000.png";
 

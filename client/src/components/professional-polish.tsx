@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { CheckCircle, AlertTriangle, Info, X } from 'lucide-react';
 
