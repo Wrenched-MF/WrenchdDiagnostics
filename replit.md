@@ -4,7 +4,7 @@
 
 This is a full-stack web application for Wrench'd IVHC (Independent Vehicle Health Check), built with a modern React frontend and Express.js backend. The application provides professional vehicle inspection services optimized for tablet use by mechanics, featuring user authentication, subscription management, and comprehensive admin capabilities.
 
-**Current Status**: Complete job management system implemented with real DVLA API integration for vehicle registration lookup, UK postcode validation, comprehensive workflow tracking from vehicle lookup to customer data collection, and PWA capability with app icons for tablet installation. Authentication issues resolved - all API endpoints now work properly with session-based authentication. VHC inspection system fully implemented with 8 comprehensive inspection categories: wheels/tyres, brake inspection, exhaust inspection, air conditioning, summer checks, winter checks, service inspection, and **Fit & Finish inspection**. Each inspection page includes real automotive data collection with automatic condition assessment (pass/advisory/fail) and detailed technical forms optimized for tablet use. **Fit & Finish inspection system complete** - comprehensive tire data collection forms with front axle, rear axle, and spare tire sections, DOT codes, brands, brake rig status, tire pressure, and tire sizes matching user's visual specifications, fully integrated with VHC task completion tracking. **Task completion tracking system fully functional** - completed inspection tasks remain in checklist with green checkmarks, completion status persists in database across sessions. **Complete VHC functionality working** - "Complete VHC" button appears when all tasks finished, properly updates job status to "vhc_completed" and returns to job card.
+**Current Status**: Complete job management system implemented with real DVLA API integration for vehicle registration lookup, UK postcode validation, comprehensive workflow tracking from vehicle lookup to customer data collection, and PWA capability with app icons for tablet installation. Authentication issues resolved - all API endpoints now work properly with session-based authentication. VHC inspection system fully implemented with 8 comprehensive inspection categories: wheels/tyres, brake inspection, exhaust inspection, air conditioning, summer checks, winter checks, service inspection, and **Fit & Finish inspection**. Each inspection page includes real automotive data collection with automatic condition assessment (pass/advisory/fail) and detailed technical forms optimized for tablet use. **Fit & Finish inspection system complete** - comprehensive tire data collection forms with front axle, rear axle, and spare tire sections, DOT codes, brands, brake rig status, tire pressure, and tire sizes matching user's visual specifications, fully integrated with VHC task completion tracking. **Task completion tracking system fully functional** - completed inspection tasks remain in checklist with green checkmarks, completion status persists in database across sessions. **Professional Report Generation System Complete** - when jobs are marked as completed, comprehensive PDF reports are automatically generated containing all vehicle details, customer information, pre-inspection data, VHC results, and fit-and-finish tire data. Reports feature the official Wrench'd/Preece Auto Repairs branding and can be viewed, downloaded, and emailed to customers via Outlook integration from the dedicated Reports section.
 
 ## User Preferences
 
@@ -75,6 +75,7 @@ This is a full-stack web application for Wrench'd IVHC (Independent Vehicle Heal
 - `/api/dvla/lookup`: Real DVLA API integration for vehicle registration data
 - `/api/postcode/lookup`: UK postcode validation and address lookup
 - `/api/fit-finish/*`: Fit & Finish inspection data management endpoints
+- `/api/reports/*`: Professional report generation, download, and email functionality
 
 ## Data Flow
 
@@ -103,6 +104,8 @@ This is a full-stack web application for Wrench'd IVHC (Independent Vehicle Heal
 - **@neondatabase/serverless**: Neon database client with WebSocket support
 - **connect-pg-simple**: PostgreSQL session store
 - **memoizee**: Function memoization for performance
+- **puppeteer**: PDF generation engine for professional reports
+- **nodemailer**: Email service for report distribution via Outlook
 
 ## Deployment Strategy
 

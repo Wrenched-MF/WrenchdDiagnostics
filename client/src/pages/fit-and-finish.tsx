@@ -211,12 +211,22 @@ export default function FitAndFinish() {
         status: 'completed'
       });
       
+      // Generate comprehensive report
+      const reportResponse = await fetch(`/api/reports/generate/${jobId}`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      if (!reportResponse.ok) {
+        throw new Error('Failed to generate report');
+      }
+      
       return data;
     },
     onSuccess: () => {
       toast({
-        title: "Fit & Finish Complete", 
-        description: "Job has been marked as completed and all data saved.",
+        title: "Job Complete!", 
+        description: "Professional report has been generated and saved to reports section.",
       });
       // Navigate to job management (home page)
       navigate('/');
