@@ -1,10 +1,11 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes.js"; // ✅ Fixed import here
+import { registerRoutes } from "./routes.js";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: false, limit: "50mb" }));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -24,11 +25,9 @@ app.use((req, res, next) => {
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
-
       if (logLine.length > 80) {
         logLine = logLine.slice(0, 79) + "…";
       }
-
       log(logLine);
     }
   });
@@ -37,31 +36,22 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
     res.status(status).json({ message });
-    throw err;
   });
 
   if (app.get("env") === "development") {
-    await setupVite(app, server);
+    await setupVite(app);
   } else {
     serveStatic(app);
   }
 
   const port = 5000;
-  server.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
-      log(`serving on port ${port}`);
-    }
-  );
-})();
+  app.listen(port, () => {
+    log(`serving on port ${port}`);
+  });
+})(); // ✅ Don't forget this closing!
