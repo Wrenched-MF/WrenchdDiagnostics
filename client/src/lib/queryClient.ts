@@ -1,9 +1,22 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { offlineStorage } from './offline-storage';
 
+// Improved error handler with control plane failover
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
+
+    console.error('❌ API Error:', {
+      url: res.url,
+      status: res.status,
+      message: text,
+    });
+
+    // Gracefully handle disabled control plane
+    if (text.includes("Control plane request failed: endpoint is disabled")) {
+      throw new Error(`503: Backend feature disabled — ${res.url}`);
+    }
+
     throw new Error(`${res.status}: ${text}`);
   }
 }
@@ -12,7 +25,7 @@ async function throwIfResNotOk(res: Response) {
 export async function apiRequest(
   method: string,
   url: string,
-  data?: unknown | undefined,
+  data?: unknown,
 ): Promise<Response> {
   try {
     const res = await fetch(url, {
@@ -23,20 +36,21 @@ export async function apiRequest(
     });
 
     await throwIfResNotOk(res);
-    
-    // Cache successful responses for offline use
+
+    // Cache successful GET responses
     if (method === 'GET' && res.ok) {
       try {
         const responseData = await res.clone().json();
         await cacheResponse(url, responseData);
       } catch (cacheError) {
-        console.warn('Failed to cache response:', cacheError);
+        console.warn('⚠️ Failed to cache response:', cacheError);
       }
     }
 
     return res;
   } catch (error) {
-    // If offline or network error, try to serve from cache for GET requests
+    console.error('🌐 API Request Error:', error);
+
     if (method === 'GET' && (!navigator.onLine || error.message.includes('fetch'))) {
       try {
         const cachedData = await getCachedResponse(url);
@@ -47,11 +61,10 @@ export async function apiRequest(
           });
         }
       } catch (cacheError) {
-        console.warn('Failed to get cached response:', cacheError);
+        console.warn('⚠️ Failed to get cached response:', cacheError);
       }
     }
 
-    // For POST/PUT/PATCH requests when offline, queue for sync
     if (!navigator.onLine && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
       try {
         await offlineStorage.addPendingOperation({
@@ -60,19 +73,18 @@ export async function apiRequest(
           endpoint: url,
           method: method
         });
-        return new Response(JSON.stringify({ 
-          _queued: true, 
-          message: 'Request queued for sync when online' 
+        return new Response(JSON.stringify({
+          _queued: true,
+          message: 'Request queued for sync when online'
         }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' }
         });
       } catch (queueError) {
-        console.error('Failed to queue operation:', queueError);
+        console.error('❌ Failed to queue operation:', queueError);
       }
     }
 
-    // Don't interfere with auth endpoints - let them fail normally
     if (url.includes('/api/user') || url.includes('/api/auth') || url.includes('/api/logout')) {
       throw error;
     }
@@ -82,45 +94,30 @@ export async function apiRequest(
 }
 
 async function cacheResponse(url: string, data: any) {
-  // Cache based on the endpoint type
-  if (url.includes('/api/jobs/')) {
-    const jobId = url.split('/').pop();
-    if (jobId && jobId !== 'jobs') {
-      await offlineStorage.saveJob({ id: jobId, ...data });
-    }
-  } else if (url.includes('/api/vhc/')) {
-    const jobId = url.split('/').pop();
-    if (jobId) {
-      await offlineStorage.saveVhcData(jobId, data);
-    }
-  } else if (url.includes('/api/fit-finish/')) {
-    const jobId = url.split('/').pop();
-    if (jobId) {
-      await offlineStorage.saveFitFinishData(jobId, data);
-    }
+  const jobId = url.split('/').pop();
+
+  if (url.includes('/api/jobs/') && jobId && jobId !== 'jobs') {
+    await offlineStorage.saveJob({ id: jobId, ...data });
+  } else if (url.includes('/api/vhc/') && jobId) {
+    await offlineStorage.saveVhcData(jobId, data);
+  } else if (url.includes('/api/fit-finish/') && jobId) {
+    await offlineStorage.saveFitFinishData(jobId, data);
   }
 }
 
 async function getCachedResponse(url: string) {
-  // Get cached data based on endpoint type
+  const jobId = url.split('/').pop();
+
   if (url.includes('/api/jobs/')) {
-    const jobId = url.split('/').pop();
-    if (jobId && jobId !== 'jobs') {
-      return await offlineStorage.get('jobs', jobId);
-    } else if (url === '/api/jobs') {
-      return await offlineStorage.getAll('jobs');
-    }
-  } else if (url.includes('/api/vhc/')) {
-    const jobId = url.split('/').pop();
-    if (jobId) {
-      return await offlineStorage.getVhcData(jobId);
-    }
-  } else if (url.includes('/api/fit-finish/')) {
-    const jobId = url.split('/').pop();
-    if (jobId) {
-      return await offlineStorage.getFitFinishData(jobId);
-    }
+    return jobId && jobId !== 'jobs'
+      ? await offlineStorage.get('jobs', jobId)
+      : await offlineStorage.getAll('jobs');
+  } else if (url.includes('/api/vhc/') && jobId) {
+    return await offlineStorage.getVhcData(jobId);
+  } else if (url.includes('/api/fit-finish/') && jobId) {
+    return await offlineStorage.getFitFinishData(jobId);
   }
+
   return null;
 }
 
@@ -152,18 +149,17 @@ export const getQueryFn: <T>(options: {
 
       await throwIfResNotOk(res);
       const data = await res.json();
-      
-      // Cache the response
+
       try {
         await cacheResponse(queryKey[0] as string, data);
       } catch (cacheError) {
-        console.warn('Failed to cache query response:', cacheError);
+        console.warn('⚠️ Failed to cache query response:', cacheError);
       }
 
       return data;
     } catch (error) {
-      // Only try cache for non-auth endpoints when offline
       const url = queryKey[0] as string;
+
       if (!navigator.onLine && !url.includes('/api/user') && !url.includes('/api/auth')) {
         try {
           const cachedData = await getCachedResponse(url);
@@ -171,9 +167,11 @@ export const getQueryFn: <T>(options: {
             return { ...cachedData, _fromCache: true };
           }
         } catch (cacheError) {
-          console.warn('Failed to get cached query response:', cacheError);
+          console.warn('⚠️ Failed to get cached query response:', cacheError);
         }
       }
+
+      console.error('❌ Query error:', error);
       throw error;
     }
   };
@@ -183,11 +181,10 @@ export const queryClient = new QueryClient({
     queries: {
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
-      refetchOnWindowFocus: true, // Refetch when back online
-      refetchOnReconnect: true, // Refetch when reconnecting
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
+      staleTime: 5 * 60 * 1000,
       retry: (failureCount, error) => {
-        // Don't retry auth endpoints or if offline
         const isAuthError = error.message.includes('401') || error.message.includes('Unauthorized');
         if (!navigator.onLine || isAuthError) return false;
         return failureCount < 2;
@@ -195,7 +192,6 @@ export const queryClient = new QueryClient({
     },
     mutations: {
       retry: (failureCount, error) => {
-        // Don't retry mutations if offline
         if (!navigator.onLine) return false;
         return failureCount < 1;
       },
